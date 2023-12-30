@@ -157,54 +157,61 @@ namespace NoREroMod
 
 
         // Block damage even on parry
+		// If not parry then original code executed 
+		// guadcount changed over time so we will get perfect block each hit;
         [global::HarmonyLib.HarmonyPatch(typeof(global::playercon), "guard_fun")]
         [global::HarmonyLib.HarmonyPrefix]
-        public static void NoResetGuardOnParry(global::playercon __instance, global::PlayerStatus ___playerstatus,
-			bool ___key_guard, bool ___Attacknow, int ___stepkind, bool ___nowdamage, bool ___magicnow, bool ___Itemuse,  bool ___Death, ref bool ___Parry,
-			ref float ___parrycount, ref float ___guradcount, float ___key_vertical)
+        public static bool NoResetGuardOnParry(global::playercon __instance, global::PlayerStatus ___playerstatus,
+			 bool ___key_guard, bool ___Attacknow, int ___stepkind, bool ___nowdamage, 
+			 bool ___magicnow,  bool ___Itemuse,  bool ___Death, ref bool  ___Parry,
+			 ref float ___parrycount, ref float ___guradcount, float ___key_vertical)
         {
-            // int stepkind = Traverse.Create(__instance).Field("stepkind").GetValue<int>();
-            if (___key_guard && !___Attacknow && ___stepkind == 0 && !___nowdamage && !___magicnow && ___playerstatus._SOUSA && !___Itemuse && !___Death)
-            {
-                if (__instance.m_Grounded)
-                {
-                    __instance.guard = true;
-                    ___guradcount += global::UnityEngine.Time.deltaTime;
-                    if (___guradcount > 0f)
-                    {
-                        ___guradcount -= global::UnityEngine.Time.deltaTime;
-                        if (___guradcount < 0f)
-                        {
-                            ___guradcount = 0f;
-                        }
-                    }
-                    if (__instance.justguard < ___playerstatus._GuardCutTime + 0.2f)
-                    {
-                        __instance.justguard += global::UnityEngine.Time.deltaTime;
-                    }
-                    if (___key_vertical > 0.2f && ___parrycount > 0.1f && ___playerstatus.WeaponKind != 5)
-                    {
-                        ___playerstatus.PleasureParalysisActionPercentage();
-                        ___Parry = true;
-                        ___parrycount = 0f;
-                        return;
-                    }
-                }
-                else if (!__instance.m_Grounded)
-                {
-                    __instance.guard = false;
-                    __instance.justguard = 0f;
-                    ___parrycount = 0f;
-                    ___guradcount = 0f;
-                    return;
-                }
-            }
-            else
-            {
-                __instance.guard = false;
-                __instance.justguard = 0f;
-                ___guradcount = 0f;
-            }
+			int stepkind = Traverse.Create(__instance).Field("stepkind").GetValue<int>();
+			if (___key_guard && !___Attacknow && ___stepkind == 0 && !___nowdamage && !___magicnow && ___playerstatus._SOUSA && !___Itemuse && !___Death && ___Parry)
+			{
+				if (__instance.m_Grounded)
+				{
+					__instance.guard = true;
+					___guradcount += global::UnityEngine.Time.deltaTime;
+					if (___guradcount > 0f)
+					{
+						___guradcount -= global::UnityEngine.Time.deltaTime;
+						if (___guradcount < 0f)
+						{
+							___guradcount = 0f;
+						}
+					}
+					if (__instance.justguard < ___playerstatus._GuardCutTime + 0.2f)
+					{
+						__instance.justguard += global::UnityEngine.Time.deltaTime;
+					}
+					if (___key_vertical > 0.2f && ___parrycount > 0.1f && ___playerstatus.WeaponKind != 5)
+					{
+						___playerstatus.PleasureParalysisActionPercentage();
+						___Parry = true;
+						___parrycount = 0f;
+						return false;
+					}
+				}
+				else if (!__instance.m_Grounded)
+				{
+					__instance.guard = false;
+					__instance.justguard = 0f;
+					___parrycount = 0f;
+					___guradcount = 0f;
+					return false;
+				}
+				return false;
+			}
+			else
+			{
+				__instance.guard = false;
+				__instance.justguard = 0f;
+				___guradcount = 0f;
+			}
+			// false -> turn off orig method
+			// true -> turn on orig method
+			return true;
         }
 
         // Token: 0x06000012 RID: 18 RVA: 0x00002073 File Offset: 0x00000273
