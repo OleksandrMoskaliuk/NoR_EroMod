@@ -75,38 +75,39 @@ namespace NoREroMod
 			}
 		}
 
-		// Token: 0x06000011 RID: 17 RVA: 0x00002548 File Offset: 0x00000748
+		
 		[global::HarmonyLib.HarmonyPatch(typeof(global::playercon), "recovery_fun")]
 		[global::HarmonyLib.HarmonyPrefix]
 		private static bool SlowSPRecoveryWhileDown(global::playercon __instance, global::PlayerStatus ___playerstatus, bool ___Parry, ref float ___Tcount)
 		{
+			
 			if (___playerstatus.Sp < ___playerstatus.AllMaxSP() && !__instance.Attacknow && !__instance.Actstate && !__instance.stepfrag && !__instance.magicnow && !___Parry && global::UnityEngine.Time.timeScale != 0f)
 			{
-				float num;
+				float SpRegenWhenDowned = 0;
 				if (__instance.guard)
 				{
-					num = 7.5f;
+					SpRegenWhenDowned = 7.5f;
 				}
 				else if (__instance.erodown == 0)
 				{
-					num = 2f;
+					SpRegenWhenDowned = 2f;
 				}
 				else
 				{
-					float num2 = 8f;
-					float num3 = 4f;
-					float num4 = 4f;
-					float num5 = 4f;
-					float num6 = num4 + num2 + num3 + num5;
-					float num7 = ___playerstatus.Mp / ___playerstatus.AllMaxMP();
-					float num8 = ___playerstatus._BadstatusVal[0] / 100f * num3;
-					float num9 = ___playerstatus.Sp / ___playerstatus.AllMaxSP() * num4;
-					float num10 = ___playerstatus.Hp / ___playerstatus.AllMaxHP() * num2;
-					float num11 = num8 + num10 + num9;
-					num = global::UnityEngine.Mathf.Lerp(global::NoREroMod.Plugin.pleasureSPRegenMax.Value, global::NoREroMod.Plugin.pleasureSPRegenMin.Value, num11 / num6);
+					float HpValuability = 8f;
+					float PleasureValuability = 4f;
+					float SpValuability = 4f;
+					float MpValuability = 4f;
+					float TotalDivider = SpValuability + HpValuability + PleasureValuability + MpValuability;
+					float MpRemain = ___playerstatus.Mp / ___playerstatus.AllMaxMP();
+					float PlRemain = 1f - (___playerstatus._BadstatusVal[0] / 100f * PleasureValuability);
+					float SpRemain = ___playerstatus.Sp / ___playerstatus.AllMaxSP() * SpValuability;
+					float HpRemain = ___playerstatus.Hp / ___playerstatus.AllMaxHP() * HpValuability;
+					float SumOfRemainedStats = MpRemain + PlRemain + SpRemain + HpRemain;
+					SpRegenWhenDowned = global::UnityEngine.Mathf.Lerp(global::NoREroMod.Plugin.pleasureSPRegenMin.Value, global::NoREroMod.Plugin.pleasureSPRegenMax.Value, 1f - (SumOfRemainedStats / TotalDivider));
 				}
-				___playerstatus.Sp += ___playerstatus.AllMaxSP() / num * global::UnityEngine.Time.deltaTime;
-			}
+                ___playerstatus.Sp += ___playerstatus.AllMaxSP() / SpRegenWhenDowned * global::UnityEngine.Time.deltaTime;
+            }
 			if (___playerstatus.Sp < 0f)
 			{
 				___playerstatus.Sp = 0f;
@@ -145,7 +146,7 @@ namespace NoREroMod
 			if (___playerstatus.Mp < ___playerstatus.AllMaxMP() && !__instance.Attacknow && !__instance.Actstate && !__instance.stepfrag && !__instance.magicnow && global::UnityEngine.Time.timeScale != 0f)
 			{
 				double num16 = 0.01 * (double)___playerstatus.AllMaxMP() * num13;
-				___playerstatus.Mp += (float)num16 * global::UnityEngine.Time.deltaTime;
+				___playerstatus.Mp += (float)num16 * global::UnityEngine.Time.deltaTime +1;
 			}
 			if (___playerstatus.Mp < 0f)
 			{
@@ -154,8 +155,60 @@ namespace NoREroMod
 			return false;
 		}
 
-		// Token: 0x06000012 RID: 18 RVA: 0x00002073 File Offset: 0x00000273
-		public PlayerConPatch()
+
+        // Block damage even on parry
+        [global::HarmonyLib.HarmonyPatch(typeof(global::playercon), "guard_fun")]
+        [global::HarmonyLib.HarmonyPrefix]
+        public static void NoResetGuardOnParry(global::playercon __instance, global::PlayerStatus ___playerstatus,
+			bool ___key_guard, bool ___Attacknow, int ___stepkind, bool ___nowdamage, bool ___magicnow, bool ___Itemuse,  bool ___Death, ref bool ___Parry,
+			ref float ___parrycount, ref float ___guradcount, float ___key_vertical)
+        {
+            // int stepkind = Traverse.Create(__instance).Field("stepkind").GetValue<int>();
+            if (___key_guard && !___Attacknow && ___stepkind == 0 && !___nowdamage && !___magicnow && ___playerstatus._SOUSA && !___Itemuse && !___Death)
+            {
+                if (__instance.m_Grounded)
+                {
+                    __instance.guard = true;
+                    ___guradcount += global::UnityEngine.Time.deltaTime;
+                    if (___guradcount > 0f)
+                    {
+                        ___guradcount -= global::UnityEngine.Time.deltaTime;
+                        if (___guradcount < 0f)
+                        {
+                            ___guradcount = 0f;
+                        }
+                    }
+                    if (__instance.justguard < ___playerstatus._GuardCutTime + 0.2f)
+                    {
+                        __instance.justguard += global::UnityEngine.Time.deltaTime;
+                    }
+                    if (___key_vertical > 0.2f && ___parrycount > 0.1f && ___playerstatus.WeaponKind != 5)
+                    {
+                        ___playerstatus.PleasureParalysisActionPercentage();
+                        ___Parry = true;
+                        ___parrycount = 0f;
+                        return;
+                    }
+                }
+                else if (!__instance.m_Grounded)
+                {
+                    __instance.guard = false;
+                    __instance.justguard = 0f;
+                    ___parrycount = 0f;
+                    ___guradcount = 0f;
+                    return;
+                }
+            }
+            else
+            {
+                __instance.guard = false;
+                __instance.justguard = 0f;
+                ___guradcount = 0f;
+            }
+        }
+
+        // Token: 0x06000012 RID: 18 RVA: 0x00002073 File Offset: 0x00000273
+        public PlayerConPatch()
 		{
 		}
 	}
