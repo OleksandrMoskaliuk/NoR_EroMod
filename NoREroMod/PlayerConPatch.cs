@@ -94,6 +94,7 @@ namespace NoREroMod
                 }
                 else
                 {
+                    // recovery will count each character parameter
                     float HpValuability = 8f;
                     float PleasureValuability = 4f;
                     float SpValuability = 4f;
@@ -104,7 +105,11 @@ namespace NoREroMod
                     float SpRemain = ___playerstatus.Sp / ___playerstatus.AllMaxSP() * SpValuability;
                     float HpRemain = ___playerstatus.Hp / ___playerstatus.AllMaxHP() * HpValuability;
                     float SumOfRemainedStats = MpRemain + PlRemain + SpRemain + HpRemain;
-                    SpRegenWhenDowned = global::UnityEngine.Mathf.Lerp(global::NoREroMod.Plugin.pleasureSPRegenMin.Value, global::NoREroMod.Plugin.pleasureSPRegenMax.Value, 1f - (SumOfRemainedStats / TotalDivider));
+                    // Total result from 0..to..1
+                    float TotalResult = 1f - (SumOfRemainedStats / TotalDivider);
+                    // Immidiately get up at all stats 100%
+                    float DynamicSpMin = global::UnityEngine.Mathf.Lerp(0.1f,global::NoREroMod.Plugin.pleasureSPRegenMin.Value, TotalResult);
+                    SpRegenWhenDowned = global::UnityEngine.Mathf.Lerp(DynamicSpMin, global::NoREroMod.Plugin.pleasureSPRegenMax.Value, TotalResult);
                 }
                 ___playerstatus.Sp += ___playerstatus.AllMaxSP() / SpRegenWhenDowned * global::UnityEngine.Time.deltaTime;
             }
@@ -121,37 +126,47 @@ namespace NoREroMod
                     ___Tcount = 0f;
                 }
             }
-            double num12 = (double)___playerstatus.HaramiCount;
-            int rapeCount = ___playerstatus.RapeCount;
-            double num13 = (0.2 * global::System.Math.Log(0.2 * num12 + 1.0) * (1.0 * global::System.Math.Pow(num12, 0.5) + 2.71828182846) + -1.9 * global::System.Math.Pow(1.0, num12) + 1.9) / 10.0;
-            num13 += (0.2 * global::System.Math.Log(0.2 * (double)rapeCount + 1.0) * (1.0 * global::System.Math.Pow((double)rapeCount, 0.5) + 2.71828182846) + -1.9 * global::System.Math.Pow(1.0, (double)rapeCount) + 1.9) / 100.0;
-            if (___playerstatus.Sp < ___playerstatus.AllMaxSP() && !__instance.Attacknow && !__instance.Actstate && !__instance.stepfrag && !__instance.magicnow && global::UnityEngine.Time.timeScale != 0f)
+            // Passive regeneration
+            float Level = (float)___playerstatus.LV / 5f;
+            float BirthCount = (float)___playerstatus.HaramiCount / 10f;
+            float RapeCount = (float)___playerstatus.RapeCount / 100f;
+            float TotalCumVolume = ___playerstatus.NakadashiValue / 1000f;
+            float TotalRegenSource = BirthCount + RapeCount + TotalCumVolume + Level;
+            float RegenerationStrength = (float)(0.2f * global::System.Math.Log(0.2 * TotalRegenSource + 1.0) *
+                (1.0 * global::System.Math.Pow(TotalRegenSource, 0.5) + 2.71828182846f) + -1.9 * global::System.Math.Pow(1.0, TotalRegenSource) + 1.9);
+            float RegenarationTime = RegenerationStrength * global::UnityEngine.Time.deltaTime * 0.1f;
+            bool PassiveRegenCondition = !__instance.Attacknow && !__instance.Actstate && !__instance.stepfrag && !__instance.magicnow && global::UnityEngine.Time.timeScale != 0f;
+            
+            if (___playerstatus.Sp < ___playerstatus.AllMaxSP() && PassiveRegenCondition)
             {
-                double num14 = 0.01 * (double)___playerstatus.AllMaxSP() * num13;
-                ___playerstatus.Sp += (float)num14;
+                ___playerstatus.Sp += ___playerstatus.AllMaxSP() * RegenarationTime;
             }
             if (___playerstatus.Sp < 0f)
             {
                 ___playerstatus.Sp = 0f;
             }
-            if (___playerstatus.Hp < ___playerstatus.AllMaxHP() && !__instance.Attacknow && !__instance.Actstate && !__instance.stepfrag && !__instance.magicnow && global::UnityEngine.Time.timeScale != 0f)
+
+            if (___playerstatus.Hp < ___playerstatus.AllMaxHP() && PassiveRegenCondition)
             {
-                double num15 = 0.01 * (double)___playerstatus.AllMaxHP() * num13;
-                ___playerstatus.Hp += (float)num15 * global::UnityEngine.Time.deltaTime;
+                ___playerstatus.Hp += ___playerstatus.AllMaxHP() * RegenarationTime;
             }
             if (___playerstatus.Hp < 0f)
             {
                 ___playerstatus.Hp = 0f;
             }
-            if (___playerstatus.Mp < ___playerstatus.AllMaxMP() && !__instance.Attacknow && !__instance.Actstate && !__instance.stepfrag && !__instance.magicnow && global::UnityEngine.Time.timeScale != 0f)
+
+            if (___playerstatus.Mp < ___playerstatus.AllMaxMP() && PassiveRegenCondition)
             {
-                double num16 = 0.01 * (double)___playerstatus.AllMaxMP() * num13;
-                ___playerstatus.Mp += (float)num16 * global::UnityEngine.Time.deltaTime + 1;
+                //___playerstatus.Mp += ___playerstatus.AllMaxMP() * RegenarationTime * ___playerstatus.NakadashiValue * 100;
+                //___playerstatus.Mp += ___playerstatus.InranCount * 100 * global::UnityEngine.Time.deltaTime;
+                //___playerstatus.Mp += ___playerstatus.NakadashiValue / 10 * global::UnityEngine.Time.deltaTime;
             }
             if (___playerstatus.Mp < 0f)
             {
                 ___playerstatus.Mp = 0f;
             }
+            // return false -> turn off original method execution
+            // return true -> turn on original method execution
             return false;
         }
 
@@ -168,7 +183,6 @@ namespace NoREroMod
              ref float ___parrycount, ref float ___guradcount, float ___key_vertical)
         {
             //int stepkind = Traverse.Create(__instance).Field("stepkind").GetValue<int>();
-
             if (___Parry)
             {
                 if (___key_guard && !___Attacknow && ___stepkind == 0 && !___nowdamage && !___magicnow && ___playerstatus._SOUSA && !___Itemuse && !___Death)
@@ -212,8 +226,6 @@ namespace NoREroMod
                     __instance.justguard = 0f;
                     ___guradcount = 0f;
                 }
-                // false -> turn off orig method
-                // true -> turn on orig method
             }
          
         }
