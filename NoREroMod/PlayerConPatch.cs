@@ -116,7 +116,7 @@ namespace NoREroMod
                     // Total result from 0..to..1
                     float TotalResult = 1f - (SumOfRemainedStats / TotalDivider);
                     // Immidiately get up at all stats 100%
-                    float DynamicSpMin = global::UnityEngine.Mathf.Lerp(0.1f,global::NoREroMod.Plugin.pleasureSPRegenMin.Value, TotalResult);
+                    float DynamicSpMin = global::UnityEngine.Mathf.Lerp(0.1f, global::NoREroMod.Plugin.pleasureSPRegenMin.Value, TotalResult);
                     SpRegenWhenDowned = global::UnityEngine.Mathf.Lerp(DynamicSpMin, global::NoREroMod.Plugin.pleasureSPRegenMax.Value, TotalResult);
                 }
                 ___playerstatus.Sp += ___playerstatus.AllMaxSP() / SpRegenWhenDowned * global::UnityEngine.Time.deltaTime;
@@ -144,7 +144,7 @@ namespace NoREroMod
                 (1.0 * global::System.Math.Pow(TotalRegenSource, 0.5) + 2.71828182846f) + -1.9 * global::System.Math.Pow(1.0, TotalRegenSource) + 1.9);
             float RegenarationTime = RegenerationStrength * global::UnityEngine.Time.deltaTime * 0.1f;
             bool PassiveRegenCondition = !__instance.Attacknow && !__instance.Actstate && !__instance.stepfrag && !__instance.magicnow && global::UnityEngine.Time.timeScale != 0f;
-            
+
             if (___playerstatus.Sp < ___playerstatus.AllMaxSP() && PassiveRegenCondition)
             {
                 ___playerstatus.Sp += ___playerstatus.AllMaxSP() * RegenarationTime;
@@ -185,12 +185,12 @@ namespace NoREroMod
         // On bad timing parry get perfect block instead damage 
         [global::HarmonyLib.HarmonyPatch(typeof(global::playercon), "guard_fun")]
         [global::HarmonyLib.HarmonyPostfix]
-        public static void  NoResetGuardOnParry(global::playercon __instance, global::PlayerStatus ___playerstatus,
+        public static void NoResetGuardOnParry(global::playercon __instance, global::PlayerStatus ___playerstatus,
              bool ___key_guard, bool ___Attacknow, int ___stepkind, bool ___nowdamage,
              bool ___magicnow, bool ___Itemuse, bool ___Death, ref bool ___Parry,
              ref float ___parrycount, ref float ___guradcount, float ___key_vertical)
         {
-            //int stepkind = Traverse.Create(__instance).Field("stepkind").GetValue<int>();
+            // int stepkind = Traverse.Create(__instance).Field("stepkind").GetValue<int>();
             if (___Parry)
             {
                 if (___key_guard && !___Attacknow && ___stepkind == 0 && !___nowdamage && !___magicnow && ___playerstatus._SOUSA && !___Itemuse && !___Death)
@@ -201,7 +201,7 @@ namespace NoREroMod
                         ___parrycount += global::UnityEngine.Time.deltaTime / 2f;
                         if (___guradcount > 0f)
                         {
-                            ___guradcount -= global::UnityEngine.Time.deltaTime /2f;
+                            ___guradcount -= global::UnityEngine.Time.deltaTime / 2f;
                             if (___guradcount < 0f)
                             {
                                 ___guradcount = 0f;
@@ -235,7 +235,7 @@ namespace NoREroMod
                     ___guradcount = 0f;
                 }
             }
-         
+
         }
 
         // Token: 0x06000012 RID: 18 RVA: 0x00002073 File Offset: 0x00000273
