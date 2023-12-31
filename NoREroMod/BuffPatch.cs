@@ -11,7 +11,7 @@ namespace NoREroMod
 		[global::HarmonyLib.HarmonyPrefix]
 		private static void NoPleasureRecovery(global::Buff __instance, bool ___Pleasureparalysis, global::PlayerStatus ___pl, ref float ___CountUp)
 		{
-			___CountUp = 0f;
+			//___CountUp = 0f;
 		}
 
 		// Token: 0x06000004 RID: 4 RVA: 0x00002110 File Offset: 0x00000310
@@ -19,11 +19,11 @@ namespace NoREroMod
 		[global::HarmonyLib.HarmonyPrefix]
 		private static bool NoPleasureRecoveryOnOrgasm(global::Buff __instance, bool ___orgasm)
 		{
-			if (___orgasm)
-			{
-				__instance.Invoke("ParalysisOrgasmInvoke", 2f);
-			}
-			return false;
+			//if (___orgasm)
+			//{
+			//	__instance.Invoke("ParalysisOrgasmInvoke", 2f);
+			//}
+			return true;
 		}
 
 		// Token: 0x06000005 RID: 5 RVA: 0x00002073 File Offset: 0x00000273
