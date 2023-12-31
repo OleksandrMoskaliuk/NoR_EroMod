@@ -48,8 +48,16 @@
     <Reference Include="BepInEx">
       <HintPath>D:\GAMES\NightofRevenge_1.07\BepInEx\core\BepInEx.dll</HintPath>
     </Reference>
+    <Reference Include="Rewired_Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\GAMES\NightofRevenge_1.07\NightofRevenge_Data\Managed\Rewired_Core.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>D:\GAMES\NightofRevenge_1.07\NightofRevenge_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\GAMES\NightofRevenge_1.07\NightofRevenge_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

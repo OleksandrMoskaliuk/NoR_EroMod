@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
+using Rewired.Utils.Classes.Data;
 using UnityEngine;
 
 namespace NoREroMod
@@ -52,26 +53,28 @@ namespace NoREroMod
 
         private void OnGUI()
         {
-            //global::UnityEngine.GUI.Box(LogDat1.rectangle, "Message");
             HandleLoggers(true);
         }
 
-        private void HandleLoggers( bool on)
+        private void HandleLoggers(bool on)
         {
             if (!on) { return; }
-            // LOGGER_01            
+
+            // Logger 01            
             if (LogDat1.TimeRamained > 0)
             {
-            global::UnityEngine.GUI.Box(LogDat1.rectangle, "Log 01: " + LoggerMessage01);
-            LogDat1.LastMessage = LoggerMessage01;
-            LogDat1.TimeRamained -= UnityEngine.Time.deltaTime;
+                global::UnityEngine.GUI.Box(LogDat1.rectangle, "Log 01: " + LoggerMessage01);
+                LogDat1.LastMessage = LoggerMessage01;
+                LogDat1.TimeRamained -= UnityEngine.Time.deltaTime;
             }
             // Update time if new message was assigned
-            if (!LoggerMessage01.Equals(LogDat1.LastMessage)) 
+            if (!LoggerMessage01.Equals(LogDat1.LastMessage))
             {
-                LogDat1.TimeRamained = 5f;
+                LogDat1.TimeRamained = 25f;
             }
-            // LOGGER_02            
+
+
+            // Logger 02            
             if (LogDat2.TimeRamained > 0)
             {
                 global::UnityEngine.GUI.Box(LogDat2.rectangle, "Log 02: " + LoggerMessage02);
@@ -81,21 +84,60 @@ namespace NoREroMod
             // Update time if new message was assigned
             if (!LoggerMessage02.Equals(LogDat2.LastMessage))
             {
-                LogDat2.TimeRamained = 5f;
+                LogDat2.TimeRamained = 25f;
+            }
+
+
+            // Logger 03           
+            if (LogDat3.TimeRamained > 0)
+            {
+                global::UnityEngine.GUI.Box(LogDat3.rectangle, "Log 03: " + LoggerMessage03);
+                LogDat3.LastMessage = LoggerMessage03;
+                LogDat3.TimeRamained -= UnityEngine.Time.deltaTime;
+            }
+            // Update time if new message was assigned
+            if (!LoggerMessage03.Equals(LogDat3.LastMessage))
+            {
+                LogDat3.TimeRamained = 25f;
+            }
+
+            // Logger 04            
+            if (LogDat4.TimeRamained > 0)
+            {
+                global::UnityEngine.GUI.Box(LogDat4.rectangle, "Log 04: " + LoggerMessage04);
+                LogDat4.LastMessage = LoggerMessage04;
+                LogDat4.TimeRamained -= UnityEngine.Time.deltaTime;
+            }
+            // Update time if new message was assigned
+            if (!LoggerMessage04.Equals(LogDat4.LastMessage))
+            {
+                LogDat4.TimeRamained = 25f;
             }
 
         }
         // Token: 0x06000018 RID: 24 RVA: 0x00002106 File Offset: 0x00000306
         public Plugin()
         {
-            LogDat1.LastMessage = LoggerMessage01;
-            LogDat1.rectangle = new global::UnityEngine.Rect(10f, 300f, 350f, 24f);
-            LogDat1.TimeRamained = 0;
 
+            float YPoint = 300;
+            float Step = 24f + 4f;
+            // Logger 01
+            LogDat1.LastMessage = LoggerMessage01;
+            LogDat1.rectangle = new global::UnityEngine.Rect(10f, YPoint, 350f, 24f);
+
+            // Logger 02
             //Step: Rect(10f, 310f + 24f +4f = 338f, 350f, 24f);
             LogDat2.LastMessage = LoggerMessage02;
-            LogDat2.rectangle = new global::UnityEngine.Rect(10f, 328f, 350f, 24f);
-            LogDat2.TimeRamained = 0f;
+            LogDat2.rectangle = new global::UnityEngine.Rect(10f, YPoint += Step, 350f, 24f);
+
+            // Logger 03
+            LogDat3.LastMessage = LoggerMessage03;
+            LogDat3.rectangle = new global::UnityEngine.Rect(10f, YPoint += Step, 350f, 24f);
+
+            // Logger 04
+            LogDat4.LastMessage = LoggerMessage04;
+            LogDat4.rectangle = new global::UnityEngine.Rect(10f, YPoint += Step, 350f, 24f);
+
         }
 
         // Token: 0x04000002 RID: 2
@@ -157,13 +199,20 @@ namespace NoREroMod
         public static string LoggerMessage02;
         private LogData LogDat2;
 
+        // Logger 03
+        public static string LoggerMessage03;
+        private LogData LogDat3;
+
+        // Logger 04
+        public static string LoggerMessage04;
+        private LogData LogDat4;
+
         // Token: 0x04000013 RID: 19
         internal static global::BepInEx.Logging.ManualLogSource Log;
 
-
     }
     // Data for Logging messages
-    struct LogData
+    public struct LogData
     {
         public Rect rectangle;
         public string LastMessage;
