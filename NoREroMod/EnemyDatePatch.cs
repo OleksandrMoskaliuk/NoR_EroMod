@@ -259,14 +259,17 @@ namespace NoREroMod
 		[global::HarmonyLib.HarmonyPostfix]
 		private static void GrabPlayerOnTouch(global::EnemyDate __instance, global::UnityEngine.Collider2D collision, global::PlayerStatus ___playerstatus, string ___JPname)
 		{
-			bool flag = ___JPname.Contains("<SUPER>");
+			bool EmpoweredEnemy = ___JPname.Contains("<SUPER>");
 			bool flag2 = ___playerstatus.Sp < ___playerstatus.AllMaxSP() / 2.5f;
-			if (flag && flag2 && (!__instance.com_player.eroflag && !__instance.eroflag && collision.gameObject.tag == "playerDAMAGEcol" && !__instance.com_player.stepfrag && __instance.com_player.m_Grounded && global::NoREroMod.Plugin.eliteGrabInvulTimer <= 0f))
+			if (EmpoweredEnemy && flag2 && (!__instance.com_player.eroflag && !__instance.eroflag && collision.gameObject.tag == "playerDAMAGEcol" 
+				&& !__instance.com_player.stepfrag && __instance.com_player.m_Grounded && global::NoREroMod.Plugin.eliteGrabInvulTimer <= 0f))
 			{
 				__instance.com_player.ImmediatelyERO();
 				___playerstatus.Sp = 0f;
 			}
-			if (___playerstatus.Sp < ___playerstatus.AllMaxSP() / 4.5f && (!__instance.com_player.eroflag && !__instance.eroflag && collision.gameObject.tag == "playerDAMAGEcol" && !__instance.com_player.stepfrag && __instance.com_player.m_Grounded && global::NoREroMod.Plugin.eliteGrabInvulTimer <= 0f))
+			if (___playerstatus.Sp < ___playerstatus.AllMaxSP() / 4.5f && (!__instance.com_player.eroflag && !__instance.eroflag
+				&& collision.gameObject.tag == "playerDAMAGEcol" && !__instance.com_player.stepfrag 
+				&& __instance.com_player.m_Grounded && global::NoREroMod.Plugin.eliteGrabInvulTimer <= 0f))
 			{
 				__instance.com_player.ImmediatelyERO();
 				___playerstatus.Sp = 0f;
