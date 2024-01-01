@@ -81,13 +81,13 @@ namespace NoREroMod
             if (!LoggerMessage01.Equals(LogDat1.LastMessage))
             {
                 // Prevents messages flickering
-                if (LogDat1.TimeRamained >= 4)
+                if (LogDat1.TimeRamained > (5f - 0.8f))
                 {
                     LoggerMessage01 = LogDat1.LastMessage;
                 }
                 else 
                 { 
-                LogDat1.TimeRamained = 5f;
+                    LogDat1.TimeRamained = 5f;
                 }
             }
 
@@ -100,9 +100,17 @@ namespace NoREroMod
                 LogDat2.TimeRamained -= UnityEngine.Time.deltaTime;
             }
             // Update time if new message was assigned
-            if (!LoggerMessage02.Equals(LogDat2.LastMessage))
+            if (!LoggerMessage02.Equals(LogDat1.LastMessage))
             {
-                LogDat2.TimeRamained = 5f;
+                // Prevents messages flickering
+                if (LogDat2.TimeRamained > (5f - 0.8f))
+                {
+                    LoggerMessage01 = LogDat2.LastMessage;
+                }
+                else
+                {
+                    LogDat2.TimeRamained = 5f;
+                }
             }
 
 
@@ -116,7 +124,15 @@ namespace NoREroMod
             // Update time if new message was assigned
             if (!LoggerMessage03.Equals(LogDat3.LastMessage))
             {
-                LogDat3.TimeRamained = 5f;
+                // Prevents messages flickering
+                if (LogDat3.TimeRamained > (5f - 0.8f))
+                {
+                    LoggerMessage03 = LogDat3.LastMessage;
+                }
+                else
+                {
+                    LogDat3.TimeRamained = 5f;
+                }
             }
 
             // Logger 04            
@@ -129,7 +145,15 @@ namespace NoREroMod
             // Update time if new message was assigned
             if (!LoggerMessage04.Equals(LogDat4.LastMessage))
             {
-                LogDat4.TimeRamained = 5f;
+                // Prevents messages flickering
+                if (LogDat4.TimeRamained > (5f - 0.8f))
+                {
+                    LoggerMessage04 = LogDat4.LastMessage;
+                }
+                else
+                {
+                    LogDat4.TimeRamained = 5f;
+                }
             }
 
         }
@@ -213,7 +237,6 @@ namespace NoREroMod
         // Logger 01
         public static string LoggerMessage01;
         private LogData LogDat1;
-        //Stack<string> 
 
         // Logger 02
         public static string LoggerMessage02;

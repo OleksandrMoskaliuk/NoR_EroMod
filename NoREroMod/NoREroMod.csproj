@@ -52,6 +52,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\GAMES\NightofRevenge_1.07\NightofRevenge_Data\Managed\Rewired_Core.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="UnityEngine">
       <HintPath>D:\GAMES\NightofRevenge_1.07\NightofRevenge_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
