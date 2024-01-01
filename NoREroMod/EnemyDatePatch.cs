@@ -315,18 +315,18 @@ namespace NoREroMod
             bool EmenyWeakState = EnemyCurrentSpHp < (EnemyTotalMaxSpHp / 4f);
 
             // Calculate if Enemy can  knock down player Using total stats
-            bool StrongOpponent = EnemyTotalStats * 0.7f  >  PlayerTotalStats;
+            bool EnemyStronger = EnemyTotalStats * 0.7f  >  PlayerTotalStats;
 
             //Plugin.LoggerMessage01 = "Sp+Mp: " + PlayerCurrentSpHp + " SpMpMax/4: " + (PlayerTotalStats/ 4f).ToString();
             //Plugin.LoggerMessage02 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
-            Plugin.LoggerMessage02 = "Sp+Mp: " + PlayerCurrentSpHp + " SpMpMax/4: " + (PlayerTotalStats / 4f).ToString();
-            Plugin.LoggerMessage03 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
-            Plugin.LoggerMessage04 = "__instance.enmTough: " + __instance.enmTough;
-            Plugin.LoggerMessage01 = "__instance.com_player.state " + __instance.com_player.state;
+            //Plugin.LoggerMessage02 = "Sp+Mp: " + PlayerCurrentSpHp + " SpMpMax/4: " + (PlayerTotalStats / 4f).ToString();
+            //Plugin.LoggerMessage03 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
+            //Plugin.LoggerMessage04 = "__instance.enmTough: " + __instance.enmTough;
+            //Plugin.LoggerMessage01 = "__instance.com_player.state " + __instance.com_player.state;
 
             // Calculete condition where eney can knock down player
             bool cnd_01 = IsHit && PlayerWeakState && !EmenyWeakState && IsDamageStatus;
-            bool cnd_02 = IsHit && StrongOpponent && IsDamageStatus;
+            bool cnd_02 = IsHit && EnemyStronger && IsDamageStatus;
             if (cnd_01 || cnd_02)
             {
                 bool Condition = !__instance.com_player.eroflag && !__instance.eroflag && collision.gameObject.tag == "playerDAMAGEcol"
@@ -337,7 +337,13 @@ namespace NoREroMod
                     ___playerstatus.Sp = 0f;
                 }
             }
-            else if (EmenyWeakState && IsAttackStatus && !PlayerOnGuard)
+
+            // Calculate if palyer can knock down enemy
+            bool PlayerStronger = PlayerTotalStats * 0.7 > EnemyTotalStats;
+            bool cnd_03 = IsAttackStatus && !PlayerOnGuard && !PlayerWeakState && EmenyWeakState; 
+            bool cnd_04 = IsAttackStatus && !PlayerOnGuard && !PlayerWeakState && PlayerStronger;
+            // Fatality on low enemy stats
+            if (cnd_03 || cnd_04)
             {
 
                 if (IsSubmitKeyPressed) // fatality on enemy low stats
