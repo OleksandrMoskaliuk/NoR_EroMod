@@ -1,5 +1,6 @@
 ﻿using System;
 using HarmonyLib;
+using Rewired;
 using Spine.Unity;
 using UnityEngine;
 
@@ -261,6 +262,8 @@ namespace NoREroMod
             global::PlayerStatus ___playerstatus, string ___JPname, ref bool ___ParryBlank,
             float ___piyoriY, global::UnityEngine.GameObject ___piyo)
         {
+            // Plugin assignment, needed for stamina on erodown
+            Plugin.EneymyData = __instance;
             // Check if player was damaged using  hp bar
             global::UnityEngine.GameObject obj_playerUI = global::UnityEngine.GameObject.Find("UI");
             global::UImng playerUI = obj_playerUI.GetComponent<global::UImng>();
@@ -269,38 +272,13 @@ namespace NoREroMod
             // Trigger when player gets damage 
             bool IsDamageStatus = __instance.com_player.state == playercon.DAMAGE;
             // Trigger when player deal damage
-            bool IsAttackStatus = __instance.com_player.state == playercon.STAB
-            || __instance.com_player.state == playercon.ATKBIGSWORD1
-            || __instance.com_player.state == playercon.ATKBIGSWORD2
-            || __instance.com_player.state == playercon.ATKSWORD1
-            || __instance.com_player.state == playercon.ATKSWORD1AIR
-            || __instance.com_player.state == playercon.ATKSWORD2
-            || __instance.com_player.state == playercon.ATKSWORD2AIR
-            || __instance.com_player.state == playercon.ATKSWORD3
-            || __instance.com_player.state == playercon.ATKSWORD3AIR
-            || __instance.com_player.state == playercon.STAB
-            || __instance.com_player.state == "ATKSWORD4AIR"
-            || __instance.com_player.state == "ATKSWORD1AIR"
-            || __instance.com_player.state == "ATKWHITEAIR3"
-            || __instance.com_player.state == "ATKSWORD5AIR"
-            || __instance.com_player.state == "ATKSWORD2AIR"
-            || __instance.com_player.state == "ATKSHARPAIR2"
-            || __instance.com_player.state == "ATKSWORD4AIR"
-            || __instance.com_player.state == "ATKSWORD1AIR"
-            || __instance.com_player.state == "ATKBIGAIR"
-            || __instance.com_player.state == "ATKSHARPAIR"
-            || __instance.com_player.state == "ATKSPEARAIR"
-            || __instance.com_player.state == "ATKWANDAIR"
-            || __instance.com_player.state == "ATKHAMMERAIR"
-            || __instance.com_player.state == "ATKKATANAIR"
-            || __instance.com_player.state == "ATKKATANAIR2"
-            || __instance.com_player.state == "ATKLONGAIR"
-            || __instance.com_player.state == "ATKPILEAIR";
+          
 
 
             // Calculate player stats
             global::Rewired.Player player = global::Rewired.ReInput.players.GetPlayer(__instance.com_player.playerId);
             bool PlayerOnGuard = player.GetButton("Guard");
+            bool IsPlayerAttack = player.GetButtonDown("Attack");
             bool IsSubmitKeyPressed = player.GetButtonDown("Submit");
             float PlayerTotalMaxSpHp = ___playerstatus.MaxSp + ___playerstatus.MaxHp;
             float PlayerCurrentSpHp = ___playerstatus.Sp + ___playerstatus.Hp;
@@ -318,11 +296,11 @@ namespace NoREroMod
             bool EnemyStronger = EnemyTotalStats * 0.7f  >  PlayerTotalStats;
 
             //Plugin.LoggerMessage01 = "Sp+Mp: " + PlayerCurrentSpHp + " SpMpMax/4: " + (PlayerTotalStats/ 4f).ToString();
-            //Plugin.LoggerMessage02 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
+            //Plugin.LoggerMessage01 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
             //Plugin.LoggerMessage02 = "Sp+Mp: " + PlayerCurrentSpHp + " SpMpMax/4: " + (PlayerTotalStats / 4f).ToString();
             //Plugin.LoggerMessage03 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
             //Plugin.LoggerMessage04 = "__instance.enmTough: " + __instance.enmTough;
-            //Plugin.LoggerMessage01 = "__instance.com_player.state " + __instance.com_player.state;
+            //Plugin.LoggerMessage03 = "player.state " + __instance.com_player.state;
 
             // Calculete condition where eney can knock down player
             bool cnd_01 = IsHit && PlayerWeakState && !EmenyWeakState && IsDamageStatus;
@@ -338,19 +316,16 @@ namespace NoREroMod
                 }
             }
 
-            // Calculate if palyer can knock down enemy
+            // Calculate whether palyer can execute enemy
             bool PlayerStronger = PlayerTotalStats * 0.7 > EnemyTotalStats;
-            bool cnd_03 = IsAttackStatus && !PlayerOnGuard && !PlayerWeakState && EmenyWeakState; 
-            bool cnd_04 = IsAttackStatus && !PlayerOnGuard && !PlayerWeakState && PlayerStronger;
-            // Fatality on low enemy stats
+            bool cnd_03 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && EmenyWeakState; 
+            bool cnd_04 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && PlayerStronger;
+            // Fatality when enemy weak
             if (cnd_03 || cnd_04)
             {
-
-                if (IsSubmitKeyPressed) // fatality on enemy low stats
-                {
-                    __instance.com_player.state = "PARRY";
-                }
-                __instance.Sp -= 50;
+                Plugin.LoggerMessage03 = "Fatality!!!";
+                Plugin.LoggerMessage03 = "Fatality!!";
+                __instance.com_player.state = "PARRY";
                 __instance.enmTough -= 999;
                 __instance.enmMAXfaltertime = 2.3f;
                 __instance.enmfaltertime = 1f;
@@ -362,12 +337,7 @@ namespace NoREroMod
                 {
                     __instance.damedir = 1;
                 }
-
-                if (!IsSubmitKeyPressed)
-                {
-                    ___ParryBlank = true;
-                }
-               
+                ___ParryBlank = true;
             }
             
             
