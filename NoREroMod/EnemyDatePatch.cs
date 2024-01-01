@@ -264,6 +264,7 @@ namespace NoREroMod
         {
             // Plugin assignment, needed for stamina on erodown
             Plugin.EneymyData = __instance;
+
             // Check if player was damaged using  hp bar
             global::UnityEngine.GameObject obj_playerUI = global::UnityEngine.GameObject.Find("UI");
             global::UImng playerUI = obj_playerUI.GetComponent<global::UImng>();
@@ -271,9 +272,6 @@ namespace NoREroMod
 
             // Trigger when player gets damage 
             bool IsDamageStatus = __instance.com_player.state == playercon.DAMAGE;
-            // Trigger when player deal damage
-          
-
 
             // Calculate player stats
             global::Rewired.Player player = global::Rewired.ReInput.players.GetPlayer(__instance.com_player.playerId);
@@ -295,13 +293,6 @@ namespace NoREroMod
             // Calculate if Enemy can  knock down player Using total stats
             bool EnemyStronger = EnemyTotalStats * 0.7f  >  PlayerTotalStats;
 
-            //Plugin.LoggerMessage01 = "Sp+Mp: " + PlayerCurrentSpHp + " SpMpMax/4: " + (PlayerTotalStats/ 4f).ToString();
-            //Plugin.LoggerMessage01 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
-            //Plugin.LoggerMessage02 = "Sp+Mp: " + PlayerCurrentSpHp + " SpMpMax/4: " + (PlayerTotalStats / 4f).ToString();
-            //Plugin.LoggerMessage03 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
-            //Plugin.LoggerMessage04 = "__instance.enmTough: " + __instance.enmTough;
-            //Plugin.LoggerMessage03 = "player.state " + __instance.com_player.state;
-
             // Calculete condition where eney can knock down player
             bool cnd_01 = IsHit && PlayerWeakState && !EmenyWeakState && IsDamageStatus;
             bool cnd_02 = IsHit && EnemyStronger && IsDamageStatus;
@@ -317,14 +308,13 @@ namespace NoREroMod
             }
 
             // Calculate whether palyer can execute enemy
+            bool IsEnemyClose = __instance.distance < 1.2f && __instance.distance > -1.2f;
             bool PlayerStronger = PlayerTotalStats * 0.7 > EnemyTotalStats;
-            bool cnd_03 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && EmenyWeakState; 
-            bool cnd_04 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && PlayerStronger;
+            bool cnd_03 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && EmenyWeakState && IsEnemyClose; 
+            bool cnd_04 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && PlayerStronger && IsEnemyClose;
             // Fatality when enemy weak
             if (cnd_03 || cnd_04)
             {
-                Plugin.LoggerMessage03 = "Fatality!!!";
-                Plugin.LoggerMessage03 = "Fatality!!";
                 __instance.com_player.state = "PARRY";
                 __instance.enmTough -= 999;
                 __instance.enmMAXfaltertime = 2.3f;
@@ -339,8 +329,7 @@ namespace NoREroMod
                 }
                 ___ParryBlank = true;
             }
-            
-            
+            //Plugin.LoggerMessage04 = "Distance to enem = " + __instance.distance;
         }
 
         public EnemyDatePatch()

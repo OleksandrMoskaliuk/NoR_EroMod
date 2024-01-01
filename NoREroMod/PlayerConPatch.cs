@@ -7,15 +7,104 @@ namespace NoREroMod
     // Token: 0x02000006 RID: 6
     internal class PlayerConPatch
     {
-        // Token: 0x0600000D RID: 13 RVA: 0x000023E0 File Offset: 0x000005E0
+        // On rape
         [global::HarmonyLib.HarmonyPatch(typeof(global::playercon), "Update")]
         [global::HarmonyLib.HarmonyPostfix]
-        private static void IncreaseStatusOnEro(global::playercon __instance, global::PlayerStatus ___playerstatus)
+        private static void IncreaseStatusOnEro(global::playercon __instance, global::PlayerStatus ___playerstatus, ref bool ___key_submit, ref bool ___key_atk, ref int ___downup)
         {
-            bool flag = __instance.erodown != 0 && __instance.eroflag;
-            if (flag)
+            
+            if (Plugin.EneymyData != null && __instance.erodown != 0 && __instance.eroflag) 
             {
+                // Gain pleasure from each enemy jub
                 ___playerstatus.BadstatusValPlus(global::NoREroMod.Plugin.pleasureGainOnEro.Value * global::UnityEngine.Time.deltaTime);
+                // Vars
+                EnemyDate enemy = Plugin.EneymyData;
+                global::Rewired.Player player = global::Rewired.ReInput.players.GetPlayer(__instance.playerId);
+                bool PlayerOnGuard = player.GetButton("Guard");
+                bool IsPlayerAttack = player.GetButtonDown("Attack");
+                bool IsSubmitKeyPressed = player.GetButtonDown("Submit");
+
+                // Valuability coeficients for each stat
+                float HpValuability = 8f;
+                float SpValuability = 6f;
+                float MpValuability = 2.5f;
+                float PleasureValuability = 4f;
+                float SpRegenWhenDowned = 2;
+
+                // Calculate closest  enemy stats
+                float EnemyTotalMaxStats = (Plugin.EneymyData.MaxHp * HpValuability) + (Plugin.EneymyData.MaxSp * SpValuability) + (Plugin.EneymyData.MaxMp * MpValuability);
+                float EnemyCurrentStats = (Plugin.EneymyData.Hp * HpValuability) + (Plugin.EneymyData.Sp * SpValuability) + (Plugin.EneymyData.Mp * MpValuability);
+                float EnemyTotalStats = EnemyTotalMaxStats + EnemyCurrentStats;
+                bool EmenyWeakState = EnemyCurrentStats < EnemyTotalMaxStats / 4f;
+
+                // Calculaet player stats to compare
+                float PlayerTotalMaxStats = (___playerstatus.AllMaxHP() * HpValuability) + (___playerstatus.AllMaxSP() * SpValuability) + (___playerstatus.AllMaxMP() * MpValuability);
+                float PlayerCurrentStats = (___playerstatus.Hp * HpValuability) + (___playerstatus.Sp * SpValuability) + (___playerstatus.Mp * MpValuability);
+                float PlayerPleasure = ___playerstatus._BadstatusVal[0] * PleasureValuability;
+                float PlayerTotalStats = PlayerTotalMaxStats + PlayerCurrentStats - PlayerPleasure;
+                bool PlayerWeakState = PlayerCurrentStats < PlayerTotalMaxStats / 4f;
+
+                // Compare enemy and palyer
+                // Smaller coeficient will give stronger sp regeneration
+                float StatsCoefCompared = (PlayerTotalStats/ EnemyTotalStats);
+                SpRegenWhenDowned *= StatsCoefCompared;
+
+                // Who is stronger
+                bool EnemyStronger = EnemyTotalStats * 0.7f > PlayerTotalStats;
+                bool PlayerStronger = PlayerTotalStats * 0.7f > EnemyTotalStats;
+
+                // Bonuses and debufs
+                bool buf_01 = PlayerStronger && EmenyWeakState;
+                bool buf_02 = PlayerStronger;
+                bool buf_03 = EmenyWeakState;
+
+                bool debuf_01 = EnemyStronger && PlayerWeakState;
+                bool debuf_02 = EnemyStronger;
+                bool debuf_03 = PlayerWeakState;
+
+                if (buf_01)
+                {
+                    SpRegenWhenDowned *= 1.4f;
+                }
+                if (buf_02)
+                {
+                    SpRegenWhenDowned *= 1.4f;
+                }
+                if (buf_03)
+                {
+                    SpRegenWhenDowned *= 1.4f;
+                }
+                if (debuf_01)
+                {
+                    SpRegenWhenDowned /= 1.4f;
+                }
+                if (debuf_02)
+                {
+                    SpRegenWhenDowned /= 1.4f;
+                }
+                if (debuf_03)
+                {
+                    SpRegenWhenDowned /= 1.4f;
+                }
+                // Fight with enemy 
+                float SpDamageMultiplier = enemy.MaxSp * 0.1f;
+                float SpDamageToEnemy = ___playerstatus.Sp * UnityEngine.Time.deltaTime * SpDamageMultiplier;
+                float SpDamageToPlayer = enemy.Sp * UnityEngine.Time.deltaTime * SpDamageMultiplier;
+                bool EnemyHaveSt = enemy.Sp  > SpDamageToEnemy;
+                bool PlayerHaveSt = ___playerstatus.Sp  > SpDamageToPlayer;
+                bool CanEscape = ___playerstatus.Sp > ___playerstatus.AllMaxSP() * 0.99;
+                if (!CanEscape && IsPlayerAttack && ___playerstatus._BadstatusVal[0] < 99 ) 
+                {
+                    ___playerstatus.Sp += ___playerstatus.AllMaxSP() * 0.1f;
+                    ___playerstatus._BadstatusVal[0] += 10;
+                }
+                if (EnemyHaveSt && PlayerHaveSt) 
+                {
+                    enemy.Sp -= SpDamageToEnemy;
+                    ___playerstatus.Sp -= SpDamageToPlayer;
+                }
+                // Else just regenerate sp and escape when enemy will run out of sp
+                ___playerstatus.Sp += SpRegenWhenDowned * UnityEngine.Time.deltaTime;
             }
         }
 
@@ -24,7 +113,9 @@ namespace NoREroMod
         [global::HarmonyLib.HarmonyPrefix]
         private static void DisableDownedRecoveryUnlessMaxSP(global::playercon __instance, global::PlayerStatus ___playerstatus, ref bool ___key_submit, ref bool ___key_atk, ref bool ___key_item, ref int ___downup)
         {
-            bool flag = __instance.erodown != 0 && !__instance._easyESC && ___playerstatus._SOUSA && ___playerstatus.Sp < ___playerstatus.AllMaxSP();
+            Plugin.LoggerMessage02 = "DisableDownedRecoveryUnlessMaxSP";
+            Plugin.LoggerMessage02 = "DisableDownedRecoveryUnlessMaxSP ";
+            bool flag = __instance.erodown != 0 && !__instance._easyESC && ___playerstatus._SOUSA && ___playerstatus.Sp < (___playerstatus.AllMaxSP() * 0.99);
             if (flag)
             {
                 ___key_submit = false;
@@ -42,7 +133,7 @@ namespace NoREroMod
                         ___downup = 1;
                         return;
                     }
-                    if (___playerstatus.HP_Posion > 0)
+                    else if (___playerstatus.HP_Posion > 0)
                     {
                         ___playerstatus._USE_HPposion = 1;
                         ___playerstatus.Sp = ___playerstatus.AllMaxSP();
@@ -63,6 +154,7 @@ namespace NoREroMod
         [global::HarmonyLib.HarmonyPrefix]
         private static void MoreDamage(ref float getatk, ref int kickbackkind, global::PlayerStatus ___playerstatus)
         {
+            // Attack multiplier depend on ero stat
             bool flag = kickbackkind < 3 && global::UnityEngine.Random.value < ___playerstatus._BadstatusVal[0] / 100f;
             if (flag)
             {
@@ -77,6 +169,7 @@ namespace NoREroMod
         [global::HarmonyLib.HarmonyPostfix]
         private static void OnPlayerDownZeroSP(int kickbackkind, global::playercon __instance, global::PlayerStatus ___playerstatus)
         {
+            // Gain plesure on knock down
             bool flag = kickbackkind >= 3 && __instance.erodown != 0;
             if (flag)
             {
@@ -90,25 +183,30 @@ namespace NoREroMod
         [global::HarmonyLib.HarmonyPrefix]
         private static bool SlowSPRecoveryWhileDown(global::playercon __instance, global::PlayerStatus ___playerstatus, bool ___Parry, ref float ___Tcount)
         {
-
+            Plugin.LoggerMessage01 = " ";
             if (___playerstatus.Sp < ___playerstatus.AllMaxSP() && !__instance.Attacknow && !__instance.Actstate && !__instance.stepfrag && !__instance.magicnow && !___Parry && global::UnityEngine.Time.timeScale != 0f)
             {
-                float SpRegenWhenDowned = 0;
+                float SpRegenWhenDowned = ___playerstatus.AllMaxSP() / 2;
+                // Player idle
                 if (__instance.guard)
                 {
                     SpRegenWhenDowned = 7.5f;
                 }
+                // Player on guard
                 else if (__instance.erodown == 0)
                 {
                     SpRegenWhenDowned = 2f;
                 }
+                // Player knocked down
                 else
                 {
-                    // recovery will count each character parameter
+                    // Valuability coeficients for each stat
                     float HpValuability = 8f;
+                    float SpValuability = 6f;
+                    float MpValuability = 2.5f;
                     float PleasureValuability = 4f;
-                    float SpValuability = 4f;
-                    float MpValuability = 4f;
+
+                    // Calculate erodown recovery 
                     float TotalDivider = SpValuability + HpValuability + PleasureValuability + MpValuability;
                     float MpRemain = ___playerstatus.Mp / ___playerstatus.AllMaxMP();
                     float PlRemain = 1f - (___playerstatus._BadstatusVal[0] / 100f * PleasureValuability);
@@ -117,16 +215,79 @@ namespace NoREroMod
                     float SumOfRemainedStats = MpRemain + PlRemain + SpRemain + HpRemain;
                     // Total result from 0..to..1
                     float TotalResult = 1f - (SumOfRemainedStats / TotalDivider);
+                    Plugin.LoggerMessage01 = "TotalResult: " + TotalResult.ToString();
                     // Immidiately get up at all stats 100%
                     float DynamicSpMin = global::UnityEngine.Mathf.Lerp(0.1f, global::NoREroMod.Plugin.pleasureSPRegenMin.Value, TotalResult);
                     SpRegenWhenDowned = global::UnityEngine.Mathf.Lerp(DynamicSpMin, global::NoREroMod.Plugin.pleasureSPRegenMax.Value, TotalResult);
+
+                    if (Plugin.EneymyData != null)
+                    {
+                        // Calculate closest  enemy stats
+                        float EnemyTotalMaxStats = (Plugin.EneymyData.MaxHp * HpValuability) + (Plugin.EneymyData.MaxSp * SpValuability) + (Plugin.EneymyData.MaxMp * MpValuability);
+                        float EnemyCurrentStats = (Plugin.EneymyData.Hp * HpValuability) + (Plugin.EneymyData.Sp * SpValuability) + (Plugin.EneymyData.Mp * MpValuability);
+                        float EnemyTotalStats = EnemyTotalMaxStats + EnemyCurrentStats;
+                        bool EmenyWeakState = EnemyCurrentStats < EnemyTotalMaxStats / 4f;
+
+                        // Calculaet player stats to compare
+                        float PlayerTotalMaxStats = (___playerstatus.AllMaxHP() * HpValuability) + (___playerstatus.AllMaxSP() * SpValuability) + (___playerstatus.AllMaxMP() * MpValuability);
+                        float PlayerCurrentStats = (___playerstatus.Hp * HpValuability) + (___playerstatus.Sp * SpValuability) + (___playerstatus.Mp * MpValuability);
+                        float PlayerPleasure = ___playerstatus._BadstatusVal[0] * PleasureValuability;
+                        float PlayerTotalStats = PlayerTotalMaxStats + PlayerCurrentStats - PlayerPleasure;
+                        bool PlayerWeakState = PlayerCurrentStats < PlayerTotalMaxStats / 4f;
+
+                        // Compare enemy and palyer
+                        // Smaller coeficient will give stronger sp regeneration
+                        float StatsCoefCompared = (EnemyTotalStats / PlayerTotalStats);
+                        SpRegenWhenDowned *= StatsCoefCompared;
+
+                        // Who is stronger
+                        bool EnemyStronger = EnemyTotalStats * 0.7f > PlayerTotalStats;
+                        bool PlayerStronger = PlayerTotalStats * 0.7f > EnemyTotalStats;
+
+                        // Bonuses and debufs
+                        bool buf_01 = PlayerStronger && EmenyWeakState;
+                        bool buf_02 = PlayerStronger;
+                        bool buf_03 = EmenyWeakState;
+
+                        bool debuf_01 = EnemyStronger && PlayerWeakState;
+                        bool debuf_02 = EnemyStronger;
+                        bool debuf_03 = PlayerWeakState;
+
+                        if (buf_01)
+                        {
+                            SpRegenWhenDowned /= 1.4f;
+                        }
+                        if (buf_02)
+                        {
+                            SpRegenWhenDowned /= 1.4f;
+                        }
+                        if (buf_03)
+                        {
+                            SpRegenWhenDowned /= 1.4f;
+                        }
+                        if (debuf_01)
+                        {
+                            SpRegenWhenDowned *= 1.4f;
+                        }
+                        if (debuf_02)
+                        {
+                            SpRegenWhenDowned *= 1.4f;
+                        }
+                        if (debuf_03)
+                        {
+                            SpRegenWhenDowned *= 1.4f;
+                        }
+                    }
                 }
+                Plugin.LoggerMessage03 = "FinalRegenWhenDowned" + (___playerstatus.AllMaxSP() / SpRegenWhenDowned * global::UnityEngine.Time.deltaTime).ToString();
                 ___playerstatus.Sp += ___playerstatus.AllMaxSP() / SpRegenWhenDowned * global::UnityEngine.Time.deltaTime;
+
+                if (___playerstatus.Sp < 0f)
+                {
+                    ___playerstatus.Sp = 0f;
+                }
             }
-            if (___playerstatus.Sp < 0f)
-            {
-                ___playerstatus.Sp = 0f;
-            }
+
             if (__instance.tough < __instance.maxtough)
             {
                 ___Tcount += global::UnityEngine.Time.deltaTime;
@@ -136,45 +297,49 @@ namespace NoREroMod
                     ___Tcount = 0f;
                 }
             }
+
             // Passive regeneration
             float Level = (float)___playerstatus.LV / 5f;
             float BirthCount = (float)___playerstatus.HaramiCount / 10f;
             float RapeCount = (float)___playerstatus.RapeCount / 100f;
             float TotalCumVolume = ___playerstatus.NakadashiValue / 1000f;
             float TotalRegenSource = BirthCount + RapeCount + TotalCumVolume + Level;
-            float RegenerationStrength = (float)(0.2f * global::System.Math.Log(0.2 * TotalRegenSource + 1.0) *
-                (1.0 * global::System.Math.Pow(TotalRegenSource, 0.5) + 2.71828182846f) + -1.9 * global::System.Math.Pow(1.0, TotalRegenSource) + 1.9);
-            float RegenarationTime = RegenerationStrength * global::UnityEngine.Time.deltaTime * 0.1f;
-            bool PassiveRegenCondition = !__instance.Attacknow && !__instance.Actstate && !__instance.stepfrag && !__instance.magicnow && global::UnityEngine.Time.timeScale != 0f;
+            float RegenerationStrength = Plugin.RegenerationFromSource(TotalRegenSource);
 
-            if (___playerstatus.Sp < ___playerstatus.AllMaxSP() && PassiveRegenCondition)
-            {
-                ___playerstatus.Sp += ___playerstatus.AllMaxSP() * RegenarationTime;
-            }
-            if (___playerstatus.Sp < 0f)
-            {
-                ___playerstatus.Sp = 0f;
-            }
+            bool PassiveRegenCondition = !__instance.Attacknow && !__instance.Actstate
+                && !__instance.stepfrag && !__instance.magicnow
+                && global::UnityEngine.Time.timeScale != 0f;
 
             if (___playerstatus.Hp < ___playerstatus.AllMaxHP() && PassiveRegenCondition)
             {
-                ___playerstatus.Hp += ___playerstatus.AllMaxHP() * RegenarationTime;
+                ___playerstatus.Hp += ___playerstatus.AllMaxHP() * RegenerationStrength * Time.deltaTime;
+                if (___playerstatus.Hp < 0f)
+                {
+                    ___playerstatus.Hp = 0f;
+                }
             }
-            if (___playerstatus.Hp < 0f)
+
+            if (___playerstatus.Sp < ___playerstatus.AllMaxSP() && PassiveRegenCondition)
             {
-                ___playerstatus.Hp = 0f;
+                ___playerstatus.Sp += ___playerstatus.AllMaxSP() * RegenerationStrength * Time.deltaTime;
+                if (___playerstatus.Sp < 0f)
+                {
+                    ___playerstatus.Sp = 0f;
+
+                }
             }
 
             if (___playerstatus.Mp < ___playerstatus.AllMaxMP() && PassiveRegenCondition)
             {
-                //___playerstatus.Mp += ___playerstatus.AllMaxMP() * RegenarationTime * ___playerstatus.NakadashiValue * 100;
-                //___playerstatus.Mp += ___playerstatus.InranCount * 100 * global::UnityEngine.Time.deltaTime;
-                //___playerstatus.Mp += ___playerstatus.NakadashiValue / 10 * global::UnityEngine.Time.deltaTime;
+                ___playerstatus.Mp += ___playerstatus.AllMaxMP() * RegenerationStrength * Time.deltaTime;
+
+                if (___playerstatus.Mp < 0f)
+                {
+                    ___playerstatus.Mp = 0f;
+                }
             }
-            if (___playerstatus.Mp < 0f)
-            {
-                ___playerstatus.Mp = 0f;
-            }
+
+
             // return false -> turn off original method execution
             // return true -> turn on original method execution
             return false;

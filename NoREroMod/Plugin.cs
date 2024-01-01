@@ -30,8 +30,8 @@ namespace NoREroMod
             global::NoREroMod.Plugin.pleasureAttackSpeedMin = base.Config.Bind<float>("PleasureStatus", "PlayerAttackSpeedMultiplierMin", 1.3f, "Player attacks this much faster when at zero pleasure");
             global::NoREroMod.Plugin.pleasureGainOnEro = base.Config.Bind<float>("PleasureStatus", "GainPerSecDuringEro", 0.5f, "Amount pleasure bar fills per sec during ero (0-100)");
             global::NoREroMod.Plugin.pleasureGainOnDown = base.Config.Bind<float>("PleasureStatus", "GainWhenDowned", 10f, "Amount pleasure bar fills when downed by an attack (0-100)");
-            global::NoREroMod.Plugin.pleasureSPRegenMax = base.Config.Bind<float>("PleasureStatus", "SPRegenMax", 50f, "Number of secs to go from 0% to 100% SP when downed at max pleasure");
-            global::NoREroMod.Plugin.pleasureSPRegenMin = base.Config.Bind<float>("PleasureStatus", "SPRegenMin", 10f, "Number of secs to go from 0% to 100% SP when downed at zero pleasure");
+            global::NoREroMod.Plugin.pleasureSPRegenMax = base.Config.Bind<float>("PleasureStatus", "SPRegenMax", 30f, "Number of secs to go from 0% to 100% SP at low stats such Sp, Hp, Mp, Ero");
+            global::NoREroMod.Plugin.pleasureSPRegenMin = base.Config.Bind<float>("PleasureStatus", "SPRegenMin", 5f, "Number of secs to go from 0% to 100% SP  at hight stats such Sp, Hp, Mp, Ero");
             global::HarmonyLib.Harmony.CreateAndPatchAll(typeof(global::NoREroMod.PlayerConPatch), null);
             global::HarmonyLib.Harmony.CreateAndPatchAll(typeof(global::NoREroMod.PlayerStatusPatch), null);
             global::HarmonyLib.Harmony.CreateAndPatchAll(typeof(global::NoREroMod.EnemyDatePatch), null);
@@ -100,12 +100,12 @@ namespace NoREroMod
                 LogDat2.TimeRamained -= UnityEngine.Time.deltaTime;
             }
             // Update time if new message was assigned
-            if (!LoggerMessage02.Equals(LogDat1.LastMessage))
+            if (!LoggerMessage02.Equals(LogDat2.LastMessage))
             {
                 // Prevents messages flickering
                 if (LogDat2.TimeRamained > (5f - 0.8f))
                 {
-                    LoggerMessage01 = LogDat2.LastMessage;
+                    LoggerMessage02 = LogDat2.LastMessage;
                 }
                 else
                 {
@@ -182,6 +182,14 @@ namespace NoREroMod
 
         }
 
+        // Calculate regeneration from all sources
+        public static float RegenerationFromSource(float source) 
+        {
+            float Regeneration = (float)(0.2f * global::System.Math.Log(0.2 * source + 1.0) *
+                (1.0 * global::System.Math.Pow(source, 0.5) + 2.71828182846f) + -1.9 * global::System.Math.Pow(1.0, source) + 1.9) / 20f;
+            return Regeneration;
+        }
+
         // Token: 0x04000002 RID: 2
         public static global::BepInEx.Configuration.ConfigEntry<float> eliteSpawnChance;
 
@@ -229,6 +237,8 @@ namespace NoREroMod
 
         // Token: 0x04000011 RID: 17
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasureSPRegenMin;
+
+        public static EnemyDate EneymyData = null;
 
         // Time in wich player can be cknocked after receiving hit
         public static float KnockDownPlayerTimeWindow = 0.3f;
