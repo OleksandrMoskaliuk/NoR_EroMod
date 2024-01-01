@@ -35,21 +35,23 @@ namespace NoREroMod
                     {
                         ___playerstatus._USE_HPposion = 1;
                         ___playerstatus.Sp = ___playerstatus.AllMaxSP();
-                        global::NoREroMod.Plugin.eliteGrabInvulTimer = global::NoREroMod.Plugin.eliteGrabInvul.Value;
+                        global::NoREroMod.Plugin.KnockDownPlayerTimeWindow = global::NoREroMod.Plugin.eliteGrabInvul.Value;
                         ___key_submit = true;
                         ___key_atk = true;
                         ___key_item = false;
                         ___downup = 1;
+                        return;
                     }
-                    else if (___playerstatus.HP_Posion > 0)
+                    if (___playerstatus.HP_Posion > 0)
                     {
                         ___playerstatus._USE_HPposion = 1;
                         ___playerstatus.Sp = ___playerstatus.AllMaxSP();
-                        global::NoREroMod.Plugin.eliteGrabInvulTimer = global::NoREroMod.Plugin.eliteGrabInvul.Value;
+                        global::NoREroMod.Plugin.KnockDownPlayerTimeWindow = global::NoREroMod.Plugin.eliteGrabInvul.Value;
                         ___key_submit = true;
                         ___key_atk = true;
                         ___key_item = false;
                         ___downup = 1;
+                        return;
                     }
                 }
             }

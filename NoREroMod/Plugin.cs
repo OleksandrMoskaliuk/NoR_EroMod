@@ -21,7 +21,6 @@ namespace NoREroMod
             global::NoREroMod.Plugin.eliteHPMulti = base.Config.Bind<float>("Elites", "HPMultiplier", 3f, "Elites have their HP multiplied by this value");
             global::NoREroMod.Plugin.eliteEXPMulti = base.Config.Bind<float>("Elites", "EXPMultiplier", 4f, "Elites have their EXP multiplied by this value");
             global::NoREroMod.Plugin.eliteSpeedMulti = base.Config.Bind<float>("Elites", "SpeedMultiplier", 1.3f, "Elites have their movement and animation speed multiplied by this value");
-            global::NoREroMod.Plugin.eliteGrabInvul = base.Config.Bind<float>("Elites", "GrabInvulTime", 1f, "Time in secs in which you can't be downed again by elites after wakeup");
             global::NoREroMod.Plugin.eliteColor = base.Config.Bind<string>("Elites", "Color", "#550055", "Elites will be tinted this color (#RRGGBB)");
             global::NoREroMod.Plugin.pleasureEnemyAttackMax = base.Config.Bind<float>("PleasureStatus", "EnemyAttackMultiplierMax", 2.5f, "Player takes this much more damage when at max pleasure");
             global::NoREroMod.Plugin.pleasureEnemyAttackMin = base.Config.Bind<float>("PleasureStatus", "EnemyAttackMultiplierMin", 1f, "Player takes this much more damage when at zero pleasure");
@@ -43,11 +42,22 @@ namespace NoREroMod
         // Token: 0x06000017 RID: 23 RVA: 0x00002BFC File Offset: 0x00000DFC
         private void Update()
         {
-            bool flag = global::NoREroMod.Plugin.eliteGrabInvulTimer > 0f;
-            if (flag)
+
+            if (KnockDownPlayerTimeTrigger)
             {
-                global::NoREroMod.Plugin.eliteGrabInvulTimer -= global::UnityEngine.Time.deltaTime;
+                if (global::NoREroMod.Plugin.KnockDownPlayerTimeWindow > 0f)
+                {
+                    global::NoREroMod.Plugin.KnockDownPlayerTimeWindow -= global::UnityEngine.Time.deltaTime;
+                }
+                if (global::NoREroMod.Plugin.KnockDownPlayerTimeWindow < 0f)
+                {
+                    global::NoREroMod.Plugin.KnockDownPlayerTimeWindow = 0;
+                }
             }
+            else 
+            { 
+                KnockDownPlayerTimeWindow = 0.3f;
+            };
 
         }
 
@@ -70,7 +80,15 @@ namespace NoREroMod
             // Update time if new message was assigned
             if (!LoggerMessage01.Equals(LogDat1.LastMessage))
             {
-                LogDat1.TimeRamained = 25f;
+                // Prevents messages flickering
+                if (LogDat1.TimeRamained >= 4)
+                {
+                    LoggerMessage01 = LogDat1.LastMessage;
+                }
+                else 
+                { 
+                LogDat1.TimeRamained = 5f;
+                }
             }
 
 
@@ -84,7 +102,7 @@ namespace NoREroMod
             // Update time if new message was assigned
             if (!LoggerMessage02.Equals(LogDat2.LastMessage))
             {
-                LogDat2.TimeRamained = 25f;
+                LogDat2.TimeRamained = 5f;
             }
 
 
@@ -98,7 +116,7 @@ namespace NoREroMod
             // Update time if new message was assigned
             if (!LoggerMessage03.Equals(LogDat3.LastMessage))
             {
-                LogDat3.TimeRamained = 25f;
+                LogDat3.TimeRamained = 5f;
             }
 
             // Logger 04            
@@ -111,7 +129,7 @@ namespace NoREroMod
             // Update time if new message was assigned
             if (!LoggerMessage04.Equals(LogDat4.LastMessage))
             {
-                LogDat4.TimeRamained = 25f;
+                LogDat4.TimeRamained = 5f;
             }
 
         }
@@ -188,12 +206,14 @@ namespace NoREroMod
         // Token: 0x04000011 RID: 17
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasureSPRegenMin;
 
-        // Token: 0x04000012 RID: 18
-        public static float eliteGrabInvulTimer;
+        // Time in wich player can be cknocked after receiving hit
+        public static float KnockDownPlayerTimeWindow = 0.3f;
+        public static bool KnockDownPlayerTimeTrigger = false;
 
         // Logger 01
         public static string LoggerMessage01;
         private LogData LogDat1;
+        //Stack<string> 
 
         // Logger 02
         public static string LoggerMessage02;

@@ -257,20 +257,51 @@ namespace NoREroMod
         [global::HarmonyLib.HarmonyPatch(typeof(global::Undead), "OnTriggerStay2D")]
         [global::HarmonyLib.HarmonyPatch(typeof(global::Vagrant), "OnTriggerStay2D")]
         [global::HarmonyLib.HarmonyPostfix]
-        private static void GrabPlayerOnTouch(global::EnemyDate __instance, global::UnityEngine.Collider2D collision, global::PlayerStatus ___playerstatus, string ___JPname, ref bool ___stabnow, ref bool ___enmATKnow)
+        private static void GrabPlayerOnTouch(global::EnemyDate __instance, global::UnityEngine.Collider2D collision,
+            global::PlayerStatus ___playerstatus, string ___JPname, ref bool ___ParryBlank,
+            float ___piyoriY, global::UnityEngine.GameObject ___piyo)
         {
             // Check if player was damaged using  hp bar
             global::UnityEngine.GameObject obj_playerUI = global::UnityEngine.GameObject.Find("UI");
             global::UImng playerUI = obj_playerUI.GetComponent<global::UImng>();
             bool IsHit = playerUI.hpbarback.fillAmount > ___playerstatus.Hp / ___playerstatus.AllMaxHP() + 0.01f;
-            bool IsHitTimeOver = false;
-            if (IsHit) 
-            {
 
-            }
+            // Trigger when player gets damage 
+            bool IsDamageStatus = __instance.com_player.state == playercon.DAMAGE;
+            // Trigger when player deal damage
+            bool IsAttackStatus = __instance.com_player.state == playercon.STAB
+            || __instance.com_player.state == playercon.ATKBIGSWORD1
+            || __instance.com_player.state == playercon.ATKBIGSWORD2
+            || __instance.com_player.state == playercon.ATKSWORD1
+            || __instance.com_player.state == playercon.ATKSWORD1AIR
+            || __instance.com_player.state == playercon.ATKSWORD2
+            || __instance.com_player.state == playercon.ATKSWORD2AIR
+            || __instance.com_player.state == playercon.ATKSWORD3
+            || __instance.com_player.state == playercon.ATKSWORD3AIR
+            || __instance.com_player.state == playercon.STAB
+            || __instance.com_player.state == "ATKSWORD4AIR"
+            || __instance.com_player.state == "ATKSWORD1AIR"
+            || __instance.com_player.state == "ATKWHITEAIR3"
+            || __instance.com_player.state == "ATKSWORD5AIR"
+            || __instance.com_player.state == "ATKSWORD2AIR"
+            || __instance.com_player.state == "ATKSHARPAIR2"
+            || __instance.com_player.state == "ATKSWORD4AIR"
+            || __instance.com_player.state == "ATKSWORD1AIR"
+            || __instance.com_player.state == "ATKBIGAIR"
+            || __instance.com_player.state == "ATKSHARPAIR"
+            || __instance.com_player.state == "ATKSPEARAIR"
+            || __instance.com_player.state == "ATKWANDAIR"
+            || __instance.com_player.state == "ATKHAMMERAIR"
+            || __instance.com_player.state == "ATKKATANAIR"
+            || __instance.com_player.state == "ATKKATANAIR2"
+            || __instance.com_player.state == "ATKLONGAIR"
+            || __instance.com_player.state == "ATKPILEAIR";
+
+
             // Calculate player stats
             global::Rewired.Player player = global::Rewired.ReInput.players.GetPlayer(__instance.com_player.playerId);
             bool PlayerOnGuard = player.GetButton("Guard");
+            bool IsSubmitKeyPressed = player.GetButtonDown("Submit");
             float PlayerTotalMaxSpHp = ___playerstatus.MaxSp + ___playerstatus.MaxHp;
             float PlayerCurrentSpHp = ___playerstatus.Sp + ___playerstatus.Hp;
             float PlayerTotalStats = PlayerTotalMaxSpHp + PlayerCurrentSpHp;
@@ -288,25 +319,52 @@ namespace NoREroMod
 
             //Plugin.LoggerMessage01 = "Sp+Mp: " + PlayerCurrentSpHp + " SpMpMax/4: " + (PlayerTotalStats/ 4f).ToString();
             //Plugin.LoggerMessage02 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
-            Plugin.LoggerMessage01 = "Sp+Mp: " + PlayerCurrentSpHp + " SpMpMax/4: " + (PlayerTotalStats / 4f).ToString();
-            Plugin.LoggerMessage02 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
-            Plugin.LoggerMessage03 = "Hit time over: " + ___stabnow.ToString();
-            Plugin.LoggerMessage04 = "___enmATKnow: " + ___enmATKnow.ToString();
+            Plugin.LoggerMessage02 = "Sp+Mp: " + PlayerCurrentSpHp + " SpMpMax/4: " + (PlayerTotalStats / 4f).ToString();
+            Plugin.LoggerMessage03 = "En_strength * 0.7: " + (EnemyTotalStats * 0.7f).ToString() + " Pl_strength: " + PlayerTotalStats;
+            Plugin.LoggerMessage04 = "__instance.enmTough: " + __instance.enmTough;
+            Plugin.LoggerMessage01 = "__instance.com_player.state " + __instance.com_player.state;
+
             // Calculete condition where eney can knock down player
-            bool cnd_01 = IsHit && PlayerWeakState && !EmenyWeakState && ___enmATKnow;
-            bool cnd_02 = IsHit && StrongOpponent && !PlayerOnGuard && ___enmATKnow; 
-            bool cnd_03 = IsHit && PlayerWeakState && StrongOpponent && ___enmATKnow; 
-            if (cnd_01 || cnd_02 || cnd_03 )
+            bool cnd_01 = IsHit && PlayerWeakState && !EmenyWeakState && IsDamageStatus;
+            bool cnd_02 = IsHit && StrongOpponent && IsDamageStatus;
+            if (cnd_01 || cnd_02)
             {
-                
                 bool Condition = !__instance.com_player.eroflag && !__instance.eroflag && collision.gameObject.tag == "playerDAMAGEcol"
-                    && !__instance.com_player.stepfrag && __instance.com_player.m_Grounded && global::NoREroMod.Plugin.eliteGrabInvulTimer <= 0f;
+                    && !__instance.com_player.stepfrag && __instance.com_player.m_Grounded;
                 if (Condition)
                 {
                     __instance.com_player.ImmediatelyERO();
                     ___playerstatus.Sp = 0f;
                 }
             }
+            else if (EmenyWeakState && IsAttackStatus && !PlayerOnGuard)
+            {
+
+                if (IsSubmitKeyPressed) // fatality on enemy low stats
+                {
+                    __instance.com_player.state = "PARRY";
+                }
+                __instance.Sp -= 50;
+                __instance.enmTough -= 999;
+                __instance.enmMAXfaltertime = 2.3f;
+                __instance.enmfaltertime = 1f;
+                if (__instance.transform.position.x > __instance.playerPos.x)
+                {
+                    __instance.damedir = -1;
+                }
+                else
+                {
+                    __instance.damedir = 1;
+                }
+
+                if (!IsSubmitKeyPressed)
+                {
+                    ___ParryBlank = true;
+                }
+               
+            }
+            
+            
         }
 
         public EnemyDatePatch()
