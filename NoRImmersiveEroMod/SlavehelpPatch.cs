@@ -3,7 +3,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 
-namespace NoREroMod
+namespace NoRImmersiveEroMod
 {
     internal class SlavehelpPatch
     {

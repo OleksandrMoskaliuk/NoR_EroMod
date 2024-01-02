@@ -6,8 +6,8 @@
     <ProjectGuid>{46262A55-8E3D-466C-928D-1E9BC0DF1458}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NoREroMod</RootNamespace>
-    <AssemblyName>NoREroMod</AssemblyName>
+    <RootNamespace>NoRImmersiveEroMod</RootNamespace>
+    <AssemblyName>NoRImmersiveEroMod</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

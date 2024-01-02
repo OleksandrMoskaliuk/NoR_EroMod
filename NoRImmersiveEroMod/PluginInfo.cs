@@ -1,8 +1,8 @@
-﻿namespace NoREroMod
+﻿namespace NoRImmersiveEroMod
 {
     public static class PluginInfo
     {
-        public const string PLUGIN_GUID = "NoREroMod";
+        public const string PLUGIN_GUID = "NoRImmersiveEroMod";
 
         public const string PLUGIN_NAME = "NoRImmersiveMod";
 

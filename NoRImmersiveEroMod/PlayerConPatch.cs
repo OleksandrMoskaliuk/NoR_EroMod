@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace NoREroMod
+namespace NoRImmersiveEroMod
 {
     // Token: 0x02000006 RID: 6
     internal class PlayerConPatch
@@ -138,7 +138,7 @@ namespace NoREroMod
                     {
                         ___playerstatus._USE_HPposion = 1;
                         ___playerstatus.Sp = ___playerstatus.AllMaxSP();
-                        global::NoREroMod.Plugin.KnockDownPlayerTimeWindow = global::NoREroMod.Plugin.eliteGrabInvul.Value;
+                        global::NoRImmersiveEroMod.Plugin.KnockDownPlayerTimeWindow = global::NoRImmersiveEroMod.Plugin.eliteGrabInvul.Value;
                         ___key_submit = true;
                         ___key_atk = true;
                         ___key_item = false;
@@ -149,7 +149,7 @@ namespace NoREroMod
                     {
                         ___playerstatus._USE_HPposion = 1;
                         ___playerstatus.Sp = ___playerstatus.AllMaxSP();
-                        global::NoREroMod.Plugin.KnockDownPlayerTimeWindow = global::NoREroMod.Plugin.eliteGrabInvul.Value;
+                        global::NoRImmersiveEroMod.Plugin.KnockDownPlayerTimeWindow = global::NoRImmersiveEroMod.Plugin.eliteGrabInvul.Value;
                         ___key_submit = true;
                         ___key_atk = true;
                         ___key_item = false;
@@ -172,7 +172,7 @@ namespace NoREroMod
             {
                 kickbackkind = 3;
             }
-            getatk *= global::UnityEngine.Mathf.Lerp(global::NoREroMod.Plugin.pleasureEnemyAttackMin.Value, global::NoREroMod.Plugin.pleasureEnemyAttackMax.Value, ___playerstatus._BadstatusVal[0] / 100f);
+            getatk *= global::UnityEngine.Mathf.Lerp(global::NoRImmersiveEroMod.Plugin.pleasureEnemyAttackMin.Value, global::NoRImmersiveEroMod.Plugin.pleasureEnemyAttackMax.Value, ___playerstatus._BadstatusVal[0] / 100f);
         }
 
         // Token: 0x06000010 RID: 16 RVA: 0x00002508 File Offset: 0x00000708
@@ -185,7 +185,7 @@ namespace NoREroMod
             bool flag = kickbackkind >= 3 && __instance.erodown != 0;
             if (flag)
             {
-                ___playerstatus.BadstatusValPlus(global::NoREroMod.Plugin.pleasureGainOnDown.Value);
+                ___playerstatus.BadstatusValPlus(global::NoRImmersiveEroMod.Plugin.pleasureGainOnDown.Value);
                 ___playerstatus.Sp = 0f;
             }
         }
@@ -229,8 +229,8 @@ namespace NoREroMod
                     float TotalResult = 1f - (SumOfRemainedStats / TotalDivider);
                     Plugin.LoggerMessage01 = "TotalResult: " + TotalResult.ToString();
                     // Immidiately get up at all stats 100%
-                    float DynamicSpMin = global::UnityEngine.Mathf.Lerp(0.1f, global::NoREroMod.Plugin.pleasureSPRegenMin.Value, TotalResult);
-                    SpRegenWhenDowned = global::UnityEngine.Mathf.Lerp(DynamicSpMin, global::NoREroMod.Plugin.pleasureSPRegenMax.Value, TotalResult);
+                    float DynamicSpMin = global::UnityEngine.Mathf.Lerp(0.1f, global::NoRImmersiveEroMod.Plugin.pleasureSPRegenMin.Value, TotalResult);
+                    SpRegenWhenDowned = global::UnityEngine.Mathf.Lerp(DynamicSpMin, global::NoRImmersiveEroMod.Plugin.pleasureSPRegenMax.Value, TotalResult);
 
                     if (Plugin.EneymyData != null)
                     {

@@ -1,4 +1,4 @@
-﻿namespace NoREroMod
+﻿namespace NoRImmersiveEroMod
 {
 
     internal class BuffPatch

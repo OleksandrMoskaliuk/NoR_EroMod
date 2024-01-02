@@ -1,6 +1,6 @@
 ﻿using Spine.Unity;
 
-namespace NoREroMod
+namespace NoRImmersiveEroMod
 {
     // Token: 0x02000005 RID: 5
     internal class EnemyDatePatch
@@ -77,16 +77,16 @@ namespace NoREroMod
         [global::HarmonyLib.HarmonyPostfix]
         private static void SpawnSuperEnemy(global::EnemyDate __instance, global::Spine.Unity.SkeletonAnimation ___mySpine, ref string ___JPname)
         {
-            bool flag = global::UnityEngine.Random.value < global::NoREroMod.Plugin.eliteSpawnChance.Value;
+            bool flag = global::UnityEngine.Random.value < global::NoRImmersiveEroMod.Plugin.eliteSpawnChance.Value;
             if (flag)
             {
                 ___JPname += "<SUPER>";
-                __instance.MaxHp *= global::NoREroMod.Plugin.eliteHPMulti.Value;
+                __instance.MaxHp *= global::NoRImmersiveEroMod.Plugin.eliteHPMulti.Value;
                 __instance.Hp = __instance.MaxHp;
-                __instance.Exp = global::UnityEngine.Mathf.RoundToInt((float)__instance.Exp * global::NoREroMod.Plugin.eliteEXPMulti.Value);
-                __instance.enmMovespeed *= global::NoREroMod.Plugin.eliteSpeedMulti.Value;
+                __instance.Exp = global::UnityEngine.Mathf.RoundToInt((float)__instance.Exp * global::NoRImmersiveEroMod.Plugin.eliteEXPMulti.Value);
+                __instance.enmMovespeed *= global::NoRImmersiveEroMod.Plugin.eliteSpeedMulti.Value;
                 global::UnityEngine.Color color;
-                bool flag2 = global::UnityEngine.ColorUtility.TryParseHtmlString(global::NoREroMod.Plugin.eliteColor.Value, out color);
+                bool flag2 = global::UnityEngine.ColorUtility.TryParseHtmlString(global::NoRImmersiveEroMod.Plugin.eliteColor.Value, out color);
                 if (flag2)
                 {
                     ___mySpine.skeleton.SetColor(color);
@@ -145,7 +145,7 @@ namespace NoREroMod
             if (flag)
             {
                 global::UnityEngine.Color color;
-                bool flag2 = global::UnityEngine.ColorUtility.TryParseHtmlString(global::NoREroMod.Plugin.eliteColor.Value, out color);
+                bool flag2 = global::UnityEngine.ColorUtility.TryParseHtmlString(global::NoRImmersiveEroMod.Plugin.eliteColor.Value, out color);
                 if (flag2)
                 {
                     ___mySpine.skeleton.SetColor(color);
@@ -205,7 +205,7 @@ namespace NoREroMod
             bool flag = ___JPname.Contains("<SUPER>");
             if (flag)
             {
-                ___imagetime *= global::NoREroMod.Plugin.eliteSpeedMulti.Value;
+                ___imagetime *= global::NoRImmersiveEroMod.Plugin.eliteSpeedMulti.Value;
             }
         }
 
