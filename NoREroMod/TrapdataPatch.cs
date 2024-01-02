@@ -4,10 +4,9 @@ using UnityEngine.SocialPlatforms;
 
 namespace NoREroMod
 {
-    // Token: 0x02000009 RID: 9
     internal class TrapdataPatch
     {
-        // Token: 0x06000019 RID: 25 RVA: 0x00002C2C File Offset: 0x00000E2C
+
         [global::HarmonyLib.HarmonyPatch(typeof(global::Trapdata), "Nakadasi")]
         [global::HarmonyLib.HarmonyPostfix]
         private static void BirthOnCreampie(global::Trapdata __instance, global::PlayerStatus ___playerstatus)
@@ -19,13 +18,15 @@ namespace NoREroMod
             //  }
             if (Plugin.EneymyData != null)
             {
-                // After cum, enemy lose sp but regenerete some health
+                // After cum, enemy lose Sp
                 Plugin.EneymyData.Sp -= Plugin.EneymyData.MaxSp * 0.9f;
+
+                // On the end enemy will restore it heath and player will get restored amount as damage
                 Plugin.EneymyData.Hp += Plugin.EneymyData.MaxHp * 0.2f;
+                ___playerstatus.Hp -= Plugin.EneymyData.MaxHp * 0.2f;
             }
         }
 
-        // Token: 0x0600001A RID: 26 RVA: 0x00002073 File Offset: 0x00000273
         public TrapdataPatch()
         {
         }

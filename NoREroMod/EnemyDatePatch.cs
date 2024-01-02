@@ -1,8 +1,4 @@
-﻿using System;
-using HarmonyLib;
-using Rewired;
-using Spine.Unity;
-using UnityEngine;
+﻿using Spine.Unity;
 
 namespace NoREroMod
 {
@@ -281,7 +277,7 @@ namespace NoREroMod
             float PlayerTotalMaxSpHp = ___playerstatus.MaxSp + ___playerstatus.MaxHp;
             float PlayerCurrentSpHp = ___playerstatus.Sp + ___playerstatus.Hp;
             float PlayerTotalStats = PlayerTotalMaxSpHp + PlayerCurrentSpHp;
-            bool PlayerWeakState =  PlayerCurrentSpHp < (PlayerTotalMaxSpHp /4f);
+            bool PlayerWeakState = PlayerCurrentSpHp < (PlayerTotalMaxSpHp / 4f);
 
             // Calculate enemy stats
             bool EmpoweredEnemy = ___JPname.Contains("<SUPER>");
@@ -291,7 +287,7 @@ namespace NoREroMod
             bool EmenyWeakState = EnemyCurrentSpHp < (EnemyTotalMaxSpHp / 4f);
 
             // Calculate if Enemy can  knock down player Using total stats
-            bool EnemyStronger = EnemyTotalStats * 0.7f  >  PlayerTotalStats;
+            bool EnemyStronger = EnemyTotalStats * 0.7f > PlayerTotalStats;
 
             // Calculete condition where eney can knock down player
             bool cnd_01 = IsHit && PlayerWeakState && !EmenyWeakState && IsDamageStatus;
@@ -303,15 +299,18 @@ namespace NoREroMod
                 if (Condition)
                 {
                     __instance.com_player.ImmediatelyERO();
-                    ___playerstatus.Sp = 0f;
+                    // Get sp damage based on player condition
+                    ___playerstatus.Sp -= PlayerTotalMaxSpHp * (PlayerCurrentSpHp / PlayerTotalMaxSpHp);
                 }
             }
 
             // Calculate whether palyer can execute enemy
+            // No need to do fatality, health is already too low or enemy dead
+            bool IsAlmostDeadEnemy = __instance.Hp < 10f;
             bool IsEnemyClose = __instance.distance < 1.2f && __instance.distance > -1.2f;
             bool PlayerStronger = PlayerTotalStats * 0.7 > EnemyTotalStats;
-            bool cnd_03 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && EmenyWeakState && IsEnemyClose; 
-            bool cnd_04 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && PlayerStronger && IsEnemyClose;
+            bool cnd_03 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && EmenyWeakState && IsEnemyClose && !IsAlmostDeadEnemy;
+            bool cnd_04 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && PlayerStronger && IsEnemyClose && !IsAlmostDeadEnemy;
             // Fatality when enemy weak
             if (cnd_03 || cnd_04)
             {

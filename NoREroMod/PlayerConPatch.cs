@@ -1,6 +1,4 @@
-﻿using System;
-using HarmonyLib;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace NoREroMod
 {
@@ -8,15 +6,29 @@ namespace NoREroMod
     internal class PlayerConPatch
     {
         // On rape
+        [global::HarmonyLib.HarmonyPatch(typeof(global::playercon), "step_fun")]
+        [global::HarmonyLib.HarmonyPrefix]
+        private static void PlayerMoveAndDashSpeed(global::playercon __instance, ref float ___MOVESPD)
+        {
+
+            // Move and Dash speed original
+            ___MOVESPD = 5f;
+
+            // Dash distance multiply it by 2
+            // if 2.5 = original value 2.5 * 2 = 5, etc...
+            __instance.movespeed = 3f;
+        }
+
+        // On rape
         [global::HarmonyLib.HarmonyPatch(typeof(global::playercon), "Update")]
         [global::HarmonyLib.HarmonyPostfix]
         private static void IncreaseStatusOnEro(global::playercon __instance, global::PlayerStatus ___playerstatus, ref bool ___key_submit, ref bool ___key_atk, ref int ___downup)
         {
-            
-            if (Plugin.EneymyData != null && __instance.erodown != 0 && __instance.eroflag) 
+
+            if (Plugin.EneymyData != null && __instance.erodown != 0 && __instance.eroflag)
             {
                 // Gain pleasure from each enemy jub
-                ___playerstatus.BadstatusValPlus(global::NoREroMod.Plugin.pleasureGainOnEro.Value * global::UnityEngine.Time.deltaTime);
+                ___playerstatus.BadstatusValPlus(5f * global::UnityEngine.Time.deltaTime);
                 // Vars
                 EnemyDate enemy = Plugin.EneymyData;
                 global::Rewired.Player player = global::Rewired.ReInput.players.GetPlayer(__instance.playerId);
@@ -46,7 +58,7 @@ namespace NoREroMod
 
                 // Compare enemy and palyer
                 // Smaller coeficient will give stronger sp regeneration
-                float StatsCoefCompared = (PlayerTotalStats/ EnemyTotalStats);
+                float StatsCoefCompared = (PlayerTotalStats / EnemyTotalStats);
                 SpRegenWhenDowned *= StatsCoefCompared;
 
                 // Who is stronger
@@ -90,15 +102,15 @@ namespace NoREroMod
                 float SpDamageMultiplier = enemy.MaxSp * 0.1f;
                 float SpDamageToEnemy = ___playerstatus.Sp * UnityEngine.Time.deltaTime * SpDamageMultiplier;
                 float SpDamageToPlayer = enemy.Sp * UnityEngine.Time.deltaTime * SpDamageMultiplier;
-                bool EnemyHaveSt = enemy.Sp  > SpDamageToEnemy;
-                bool PlayerHaveSt = ___playerstatus.Sp  > SpDamageToPlayer;
+                bool EnemyHaveSt = enemy.Sp > SpDamageToEnemy;
+                bool PlayerHaveSt = ___playerstatus.Sp > SpDamageToPlayer;
                 bool CanEscape = ___playerstatus.Sp > ___playerstatus.AllMaxSP() * 0.99;
-                if (!CanEscape && IsPlayerAttack && ___playerstatus._BadstatusVal[0] < 99 ) 
+                if (!CanEscape && IsPlayerAttack && ___playerstatus._BadstatusVal[0] < 99)
                 {
                     ___playerstatus.Sp += ___playerstatus.AllMaxSP() * 0.1f;
                     ___playerstatus._BadstatusVal[0] += 10;
                 }
-                if (EnemyHaveSt && PlayerHaveSt) 
+                if (EnemyHaveSt && PlayerHaveSt)
                 {
                     enemy.Sp -= SpDamageToEnemy;
                     ___playerstatus.Sp -= SpDamageToPlayer;
