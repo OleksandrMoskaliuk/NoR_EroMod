@@ -258,40 +258,11 @@ namespace NoRImmersiveEroMod
             global::PlayerStatus ___playerstatus, string ___JPname, ref bool ___ParryBlank,
             float ___piyoriY, global::UnityEngine.GameObject ___piyo)
         {
-            // Plugin assignment, needed for stamina on erodown
-            Plugin.EneymyData = __instance;
-
-            // Check if player was damaged using  hp bar
-            global::UnityEngine.GameObject obj_playerUI = global::UnityEngine.GameObject.Find("UI");
-            global::UImng playerUI = obj_playerUI.GetComponent<global::UImng>();
-            bool IsHit = playerUI.hpbarback.fillAmount > ___playerstatus.Hp / ___playerstatus.AllMaxHP() + 0.01f;
-
-            // Trigger when player gets damage 
-            bool IsDamageStatus = __instance.com_player.state == playercon.DAMAGE;
-
-            // Calculate player stats
-            global::Rewired.Player player = global::Rewired.ReInput.players.GetPlayer(__instance.com_player.playerId);
-            bool PlayerOnGuard = player.GetButton("Guard");
-            bool IsPlayerAttack = player.GetButtonDown("Attack");
-            bool IsSubmitKeyPressed = player.GetButtonDown("Submit");
-            float PlayerTotalMaxSpHp = ___playerstatus.MaxSp + ___playerstatus.MaxHp;
-            float PlayerCurrentSpHp = ___playerstatus.Sp + ___playerstatus.Hp;
-            float PlayerTotalStats = PlayerTotalMaxSpHp + PlayerCurrentSpHp;
-            bool PlayerWeakState = PlayerCurrentSpHp < (PlayerTotalMaxSpHp / 4f);
-
-            // Calculate enemy stats
-            bool EmpoweredEnemy = ___JPname.Contains("<SUPER>");
-            float EnemyTotalMaxSpHp = __instance.MaxHp + __instance.MaxSp;
-            float EnemyCurrentSpHp = __instance.Sp + __instance.Hp;
-            float EnemyTotalStats = EnemyTotalMaxSpHp + EnemyCurrentSpHp;
-            bool EmenyWeakState = EnemyCurrentSpHp < (EnemyTotalMaxSpHp / 4f);
-
-            // Calculate if Enemy can  knock down player Using total stats
-            bool EnemyStronger = EnemyTotalStats * 0.7f > PlayerTotalStats;
-
+            GameplayInfo ginfo = Plugin.gameplay;
+            ginfo.Update(___playerstatus, __instance);
             // Calculete condition where eney can knock down player
-            bool cnd_01 = IsHit && PlayerWeakState && !EmenyWeakState && IsDamageStatus;
-            bool cnd_02 = IsHit && EnemyStronger && IsDamageStatus;
+            bool cnd_01 = ginfo.mIsRevengeDamageBar && ginfo.mIsPlayerWeak && !ginfo.mIsEnemyWeak && ginfo.mIsDamageStatus;
+            bool cnd_02 = ginfo.mIsRevengeDamageBar && ginfo.mIsEnemyStronger && ginfo.mIsDamageStatus;
             if (cnd_01 || cnd_02)
             {
                 bool Condition = !__instance.com_player.eroflag && !__instance.eroflag && collision.gameObject.tag == "playerDAMAGEcol"
@@ -300,17 +271,17 @@ namespace NoRImmersiveEroMod
                 {
                     __instance.com_player.ImmediatelyERO();
                     // Get sp damage based on player condition
-                    ___playerstatus.Sp -= PlayerTotalMaxSpHp * (PlayerCurrentSpHp / PlayerTotalMaxSpHp);
+                    ___playerstatus.Sp = ginfo.mPlayerLostStats * ginfo.mPlayerMaxSp *  ginfo.mEnemyAdvantage;
                 }
             }
-
             // Calculate whether palyer can execute enemy
             // No need to do fatality, health is already too low or enemy dead
-            bool IsAlmostDeadEnemy = __instance.Hp < 10f;
-            bool IsEnemyClose = __instance.distance < 1.2f && __instance.distance > -1.2f;
-            bool PlayerStronger = PlayerTotalStats * 0.7 > EnemyTotalStats;
-            bool cnd_03 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && EmenyWeakState && IsEnemyClose && !IsAlmostDeadEnemy;
-            bool cnd_04 = !IsSubmitKeyPressed && IsPlayerAttack && !PlayerOnGuard && !PlayerWeakState && PlayerStronger && IsEnemyClose && !IsAlmostDeadEnemy;
+            ginfo.Update(___playerstatus, __instance);
+            bool IsEnemyAlmostDead = __instance.Hp < 10f;
+            bool cnd_03 = !ginfo.mIsSubmitKeyPressed && ginfo.mIsPlayerAttack && !ginfo.mIsPlayerOnGuard &&
+                !ginfo.mIsPlayerWeak && ginfo.mIsEnemyWeak && ginfo.mIsEnemyClose && !IsEnemyAlmostDead;
+            bool cnd_04 = !ginfo.mIsSubmitKeyPressed && ginfo.mIsPlayerAttack && !ginfo.mIsPlayerOnGuard &&
+                !ginfo.mIsPlayerWeak && ginfo.mIsPlayerStronger && ginfo.mIsEnemyClose && !IsEnemyAlmostDead;
             // Fatality when enemy weak
             if (cnd_03 || cnd_04)
             {
@@ -328,7 +299,6 @@ namespace NoRImmersiveEroMod
                 }
                 ___ParryBlank = true;
             }
-            //Plugin.LoggerMessage04 = "Distance to enem = " + __instance.distance;
         }
 
         public EnemyDatePatch()

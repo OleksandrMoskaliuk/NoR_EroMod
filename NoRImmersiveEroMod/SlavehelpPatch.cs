@@ -15,9 +15,6 @@ namespace NoRImmersiveEroMod
             ___Flagmng._helpslaveStage[___spawnslave._stage, ___spawnslave._SlaveNumber] = false;
         }
 
-
-
-
         public SlavehelpPatch()
         {
         }

@@ -167,13 +167,8 @@ namespace NoRImmersiveEroMod
             // Logger 04
             LogDat4.LastMessage = LoggerMessage04;
             LogDat4.rectangle = new global::UnityEngine.Rect(10f, YPoint += Step, 350f, 24f);
-        }
 
-        public static float RegenerationFromSource(float source)
-        {
-            float Regeneration = (float)(0.2f * global::System.Math.Log(0.2 * source + 1.0) *
-                (1.0 * global::System.Math.Pow(source, 0.5) + 2.71828182846f) + -1.9 * global::System.Math.Pow(1.0, source) + 1.9) / 20f;
-            return Regeneration;
+            gameplay = new GameplayInfo();
         }
 
         public static global::BepInEx.Configuration.ConfigEntry<float> eliteSpawnChance;
@@ -194,7 +189,7 @@ namespace NoRImmersiveEroMod
         internal static global::BepInEx.Logging.ManualLogSource Log;
         public static float KnockDownPlayerTimeWindow = 0.3f;
         public static bool KnockDownPlayerTimeTrigger = false;
-        public static EnemyDate EneymyData = null;
+        public static GameplayInfo gameplay;
 
         // Logger 01
         public static string LoggerMessage01;
