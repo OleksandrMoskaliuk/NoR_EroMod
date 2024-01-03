@@ -81,7 +81,8 @@ namespace NoRImmersiveEroMod
                     ___playerstatus.Hp -= EnemyHpRecov;
                     ___playerstatus.Sp -= UnityEngine.Random.Range((0.1f * ___playerstatus.AllMaxSP())  , (1 * ___playerstatus.AllMaxSP()));
                 } 
-                ___playerstatus.BadstatusValPlus(ginfo.BuffEnemy((float)Math.Pow(ginfo.mEnemyAdvantage,1.8f))  * global::UnityEngine.Time.deltaTime);
+                ___playerstatus.BadstatusValPlus(ginfo.BuffEnemy((float)Math.Pow(ginfo.mEnemyAdvantage,1.9f))
+                    * global::UnityEngine.Time.deltaTime * Plugin.pleasureOnRapeGainMultiplier.Value);
             }
         }
 
@@ -99,7 +100,6 @@ namespace NoRImmersiveEroMod
                     {
                         ___playerstatus._USE_MPposion = 1;
                         ___playerstatus.Sp = ___playerstatus.AllMaxSP();
-                        global::NoRImmersiveEroMod.Plugin.KnockDownPlayerTimeWindow = global::NoRImmersiveEroMod.Plugin.eliteGrabInvul.Value;
                         ___key_submit = true;
                         ___key_atk = true;
                         ___key_item = false;
@@ -110,7 +110,6 @@ namespace NoRImmersiveEroMod
                     {
                         ___playerstatus._USE_HPposion = 1;
                         ___playerstatus.Sp = ___playerstatus.AllMaxSP();
-                        global::NoRImmersiveEroMod.Plugin.KnockDownPlayerTimeWindow = global::NoRImmersiveEroMod.Plugin.eliteGrabInvul.Value;
                         ___key_submit = true;
                         ___key_atk = true;
                         ___key_item = false;
@@ -187,6 +186,7 @@ namespace NoRImmersiveEroMod
                         MaxTimeToGetUp = Math.Min(50f, MaxTimeToGetUp);
                         float PlayerCondition = 1 - (ginfo.mPlayerCurrentStats / ginfo.PlayerTotalStats);
                         SpIncrement /= global::UnityEngine.Mathf.Lerp(MinTimeToGetUp, MaxTimeToGetUp, PlayerCondition);
+                        SpIncrement *= Plugin.SPRegenOnDownState.Value;
                     }
                 }
                 ___playerstatus.Sp += SpIncrement * global::UnityEngine.Time.deltaTime;

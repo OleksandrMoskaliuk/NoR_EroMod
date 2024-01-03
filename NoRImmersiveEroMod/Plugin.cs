@@ -6,24 +6,23 @@ namespace NoRImmersiveEroMod
     [global::BepInEx.BepInProcess("NightofRevenge.exe")]
     public class Plugin : global::BepInEx.BaseUnityPlugin
     {
-
         private void Awake()
         {
             global::NoRImmersiveEroMod.Plugin.Log = base.Logger;
-            global::NoRImmersiveEroMod.Plugin.eliteSpawnChance = base.Config.Bind<float>("Elites", "SpawnChance", 0.1f, "Chance for an enemy to spawn as an elite (0-1)");
-            global::NoRImmersiveEroMod.Plugin.eliteHPMulti = base.Config.Bind<float>("Elites", "HPMultiplier", 3f, "Elites have their HP multiplied by this value");
-            global::NoRImmersiveEroMod.Plugin.eliteEXPMulti = base.Config.Bind<float>("Elites", "EXPMultiplier", 4f, "Elites have their EXP multiplied by this value");
-            global::NoRImmersiveEroMod.Plugin.eliteSpeedMulti = base.Config.Bind<float>("Elites", "SpeedMultiplier", 1.3f, "Elites have their movement and animation speed multiplied by this value");
-            global::NoRImmersiveEroMod.Plugin.eliteColor = base.Config.Bind<string>("Elites", "Color", "#ffffff", "Elites cab be tinted this color (#550055)");
-            global::NoRImmersiveEroMod.Plugin.pleasureEnemyAttackMax = base.Config.Bind<float>("PleasureStatus", "EnemyAttackMultiplierMax", 2.5f, "Player takes this much more damage when at max pleasure");
+            global::NoRImmersiveEroMod.Plugin.eliteSpawnChance = base.Config.Bind<float>("Enemies", "SpawnChance", 1f, "Chance for an enemy to spawn as an elite (0-1)");
+            global::NoRImmersiveEroMod.Plugin.eliteHPMulti = base.Config.Bind<float>("Enemies", "HPMultiplier", 3f, "Enemies have random Hp multiplier from 1 to HPMultiplier value");
+            global::NoRImmersiveEroMod.Plugin.eliteEXPMulti = base.Config.Bind<float>("Enemies", "EXPMultiplier", 4f, "Elites have their EXP multiplied by this value");
+            global::NoRImmersiveEroMod.Plugin.eliteSpeedMulti = base.Config.Bind<float>("Enemies", "SpeedMultiplier", 1.5f, "Elite enemies ATK multiplier random range (0.5 - SpeedMultiplier)");
+            global::NoRImmersiveEroMod.Plugin.eliteColor = base.Config.Bind<string>("Enemies", "Color", "#ffffff", "Elites cab be tinted this color (#550055), by default color is transparent");
+            global::NoRImmersiveEroMod.Plugin.pleasureEnemyAttackMax = base.Config.Bind<float>("PleasureStatus", "EnemyAttackMultiplierMax", 2.0f, "Player takes this much more damage when at max pleasure");
             global::NoRImmersiveEroMod.Plugin.pleasureEnemyAttackMin = base.Config.Bind<float>("PleasureStatus", "EnemyAttackMultiplierMin", 1f, "Player takes this much more damage when at zero pleasure");
             global::NoRImmersiveEroMod.Plugin.pleasurePlayerAttackMax = base.Config.Bind<float>("PleasureStatus", "PlayerAttackMultiplierMax", 0.3f, "Player deals this much more damage when at max pleasure");
             global::NoRImmersiveEroMod.Plugin.pleasurePlayerAttackMin = base.Config.Bind<float>("PleasureStatus", "PlayerAttackMultiplierMin", 1f, "Player deals this much more damage when at zero pleasure");
             global::NoRImmersiveEroMod.Plugin.pleasureAttackSpeedMax = base.Config.Bind<float>("PleasureStatus", "PlayerAttackSpeedMultiplierMax", 0.7f, "Player attacks this much faster when at max pleasure");
             global::NoRImmersiveEroMod.Plugin.pleasureAttackSpeedMin = base.Config.Bind<float>("PleasureStatus", "PlayerAttackSpeedMultiplierMin", 1.3f, "Player attacks this much faster when at zero pleasure");
-            global::NoRImmersiveEroMod.Plugin.pleasureGainOnDown = base.Config.Bind<float>("PleasureStatus", "GainWhenDowned", 10f, "Amount pleasure bar fills when downed by an attack (0-100)");
-            global::NoRImmersiveEroMod.Plugin.pleasureSPRegenMax = base.Config.Bind<float>("PleasureStatus", "SPRegenMax", 30f, "Number of secs to go from 0% to 100% SP at low stats such Sp, Hp, Mp, Ero");
-            global::NoRImmersiveEroMod.Plugin.pleasureSPRegenMin = base.Config.Bind<float>("PleasureStatus", "SPRegenMin", 5f, "Number of secs to go from 0% to 100% SP  at hight stats such Sp, Hp, Mp, Ero");
+            global::NoRImmersiveEroMod.Plugin.pleasureOnRapeGainMultiplier = base.Config.Bind<float>("PleasureStatus", "pleasureOnRapeGainMultiplier", 1f, "Pleasure multiplier when rape starts, range (0.1 - 2)");
+            global::NoRImmersiveEroMod.Plugin.SPRegenOnDownState = base.Config.Bind<float>("PleasureStatus", "SPRegenOnDownState", 1f, "Stamina regeneration multiplier, when player knock down range (0.1 - 10)");
+            global::NoRImmersiveEroMod.Plugin.RapeEscapeDifficulty = base.Config.Bind<float>("Rape", "RapeEscapeDifficulty", 1f, "Rape Escape multiplier, by default 1 in default range (0.1 - 2)");
             global::HarmonyLib.Harmony.CreateAndPatchAll(typeof(global::NoRImmersiveEroMod.PlayerConPatch), null);
             global::HarmonyLib.Harmony.CreateAndPatchAll(typeof(global::NoRImmersiveEroMod.PlayerStatusPatch), null);
             global::HarmonyLib.Harmony.CreateAndPatchAll(typeof(global::NoRImmersiveEroMod.EnemyDatePatch), null);
@@ -34,22 +33,6 @@ namespace NoRImmersiveEroMod
 
         private void Update()
         {
-
-            if (KnockDownPlayerTimeTrigger)
-            {
-                if (global::NoRImmersiveEroMod.Plugin.KnockDownPlayerTimeWindow > 0f)
-                {
-                    global::NoRImmersiveEroMod.Plugin.KnockDownPlayerTimeWindow -= global::UnityEngine.Time.deltaTime;
-                }
-                if (global::NoRImmersiveEroMod.Plugin.KnockDownPlayerTimeWindow < 0f)
-                {
-                    global::NoRImmersiveEroMod.Plugin.KnockDownPlayerTimeWindow = 0;
-                }
-            }
-            else
-            {
-                KnockDownPlayerTimeWindow = 0.3f;
-            };
 
         }
 
@@ -175,7 +158,6 @@ namespace NoRImmersiveEroMod
         public static global::BepInEx.Configuration.ConfigEntry<float> eliteHPMulti;
         public static global::BepInEx.Configuration.ConfigEntry<float> eliteEXPMulti;
         public static global::BepInEx.Configuration.ConfigEntry<float> eliteSpeedMulti;
-        public static global::BepInEx.Configuration.ConfigEntry<float> eliteGrabInvul;
         public static global::BepInEx.Configuration.ConfigEntry<string> eliteColor;
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasureEnemyAttackMax;
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasureEnemyAttackMin;
@@ -183,12 +165,10 @@ namespace NoRImmersiveEroMod
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasurePlayerAttackMin;
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasureAttackSpeedMax;
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasureAttackSpeedMin;
-        public static global::BepInEx.Configuration.ConfigEntry<float> pleasureGainOnDown;
-        public static global::BepInEx.Configuration.ConfigEntry<float> pleasureSPRegenMax;
-        public static global::BepInEx.Configuration.ConfigEntry<float> pleasureSPRegenMin;
+        public static global::BepInEx.Configuration.ConfigEntry<float> pleasureOnRapeGainMultiplier;
+        public static global::BepInEx.Configuration.ConfigEntry<float> SPRegenOnDownState;
+        public static global::BepInEx.Configuration.ConfigEntry<float> RapeEscapeDifficulty;
         internal static global::BepInEx.Logging.ManualLogSource Log;
-        public static float KnockDownPlayerTimeWindow = 0.3f;
-        public static bool KnockDownPlayerTimeTrigger = false;
         public static GameplayInfo gameplay;
 
         // Logger 01

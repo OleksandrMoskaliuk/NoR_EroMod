@@ -13,7 +13,7 @@ namespace NoRImmersiveEroMod
             float EnemyHpRecov = Math.Min((__instance.MaxHp - __instance.Hp), (___playerstatus.Hp * UnityEngine.Random.Range(0.1f, 0.9f)));
             __instance.Hp += EnemyHpRecov;
             ___playerstatus.Hp -= EnemyHpRecov;
-            ___playerstatus.Sp += UnityEngine.Random.Range((0.5f * ___playerstatus.AllMaxSP()), (1 * ___playerstatus.AllMaxSP()));
+            ___playerstatus.Sp += UnityEngine.Random.Range((0.5f * ___playerstatus.AllMaxSP()), (1 * ___playerstatus.AllMaxSP())) * Plugin.RapeEscapeDifficulty.Value;
         }
 
         public TrapdataPatch()

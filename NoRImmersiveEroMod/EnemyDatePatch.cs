@@ -15,7 +15,7 @@ namespace NoRImmersiveEroMod
             float EnemyHpRecov = Math.Min((__instance.MaxHp - __instance.Hp), (___playerstatus.Hp * UnityEngine.Random.Range(0.1f, 0.9f)));
             __instance.Hp += EnemyHpRecov;
             ___playerstatus.Hp -= EnemyHpRecov;
-            ___playerstatus.Sp += UnityEngine.Random.Range((0.5f * ___playerstatus.AllMaxSP()), (1 * ___playerstatus.AllMaxSP()));
+            ___playerstatus.Sp += UnityEngine.Random.Range((0.5f * ___playerstatus.AllMaxSP()), (1 * ___playerstatus.AllMaxSP())) * Plugin.RapeEscapeDifficulty.Value;
 
         }
 
@@ -75,16 +75,16 @@ namespace NoRImmersiveEroMod
         [global::HarmonyLib.HarmonyPatch(typeof(global::Undead), "Start")]
         [global::HarmonyLib.HarmonyPatch(typeof(global::Vagrant), "Start")]
         [global::HarmonyLib.HarmonyPostfix]
-        private static void SpawnSuperEnemy(global::EnemyDate __instance, global::Spine.Unity.SkeletonAnimation ___mySpine, ref string ___JPname)
+        private static void SpawnEliteEnemy(global::EnemyDate __instance, global::Spine.Unity.SkeletonAnimation ___mySpine, ref string ___JPname)
         {
             //if (UnityEngine.Random.value < Plugin.eliteSpawnChance.Value)
-            if(UnityEngine.Random.Range(0f,2f) > 1f)
+            if(Plugin.eliteSpawnChance.Value > UnityEngine.Random.Range(0f, 0.99f))
             {
                 ___JPname += "<SUPER>";
                 __instance.MaxHp *= UnityEngine.Random.Range(2f, 4f);
                 __instance.Hp = __instance.MaxHp;
                 __instance.Exp = global::UnityEngine.Mathf.RoundToInt((float)__instance.Exp * global::NoRImmersiveEroMod.Plugin.eliteEXPMulti.Value);
-                __instance.enmMovespeed *= global::NoRImmersiveEroMod.Plugin.eliteSpeedMulti.Value;
+                __instance.enmMovespeed *= UnityEngine.Random.Range(0.5f, global::NoRImmersiveEroMod.Plugin.eliteSpeedMulti.Value);
                 global::UnityEngine.Color color;
                 if (UnityEngine.ColorUtility.TryParseHtmlString(global::NoRImmersiveEroMod.Plugin.eliteColor.Value, out color))
                 {
