@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace NoRImmersiveEroMod
 {
@@ -86,16 +87,24 @@ namespace NoRImmersiveEroMod
             mPlayerAdvantage = mPlayerTotalStats / mEnemyTotalStats;
             mEnemyAdvantage = mEnemyTotalStats / mPlayerTotalStats;
 
-            
 
-            Plugin.LoggerMessage01 = "MinTimeToGetUp = " + MinTimeToGetUp;
-            Plugin.LoggerMessage02 = "MaxTimeToGetUp = " + MaxTimeToGetUp;
 
-            // Plugin.LoggerMessage03 = "PleasureEnemyBuff = " + PleasureEnemyBuff;
-            // Plugin.LoggerMessage04 = "PleasurePlayerBuff = " + PleasurePlayerBuff;
 
-            Plugin.LoggerMessage03 = "mEnemyTotalStats = " + mEnemyTotalStats;
-            Plugin.LoggerMessage04 = "mPlayerTotalStats = " + mPlayerTotalStats;
+
+
+
+
+            float SpDamageMultiplier = mEnemyDate.Sp * 0.1f * Time.deltaTime;
+            float SpDamageToEnemy = mPlayerStatus.Sp * SpDamageMultiplier;
+            float SpDamageToPlayer = mEnemyDate.Sp * SpDamageMultiplier;
+            bool EnemyHaveSt = mEnemySp > SpDamageToEnemy;
+            bool PlayerHaveSt = mPlayerStatus.Sp > SpDamageToPlayer;
+            bool CanEscape = mPlayerStatus.Sp > mPlayerStatus.AllMaxSP() * 0.99;
+
+            Plugin.LoggerMessage01 = "Player state " + mPlayercon.state;
+            Plugin.LoggerMessage02 = "EnemyHaveSt = " + EnemyHaveSt;
+            //Plugin.LoggerMessage03 = "mEnemyTotalStats = " + mEnemyTotalStats;
+            //Plugin.LoggerMessage04 = "mPlayerTotalStats = " + mPlayerTotalStats;
 
 
             return true;

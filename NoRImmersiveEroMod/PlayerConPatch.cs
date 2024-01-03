@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace NoRImmersiveEroMod
 {
-    // Token: 0x02000006 RID: 6
+
     internal class PlayerConPatch
     {
-        // On rape
+        // On rape 
         [global::HarmonyLib.HarmonyPatch(typeof(global::playercon), "step_fun")]
         [global::HarmonyLib.HarmonyPrefix]
         private static void PlayerMoveAndDashSpeed(global::playercon __instance, ref float ___MOVESPD)
@@ -23,55 +23,65 @@ namespace NoRImmersiveEroMod
         // Escape from rape mechanics
         [global::HarmonyLib.HarmonyPatch(typeof(global::playercon), "Update")]
         [global::HarmonyLib.HarmonyPostfix]
-        private static void IncreaseStatusOnEro(global::playercon __instance, global::PlayerStatus ___playerstatus, ref bool ___key_submit, ref bool ___key_atk, ref int ___downup)
+        private static void IncreaseStatusOnEro(global::playercon __instance, global::PlayerStatus ___playerstatus, ref bool ___key_submit, ref bool ___key_atk, ref int ___downup, ref bool ___key_item)
         {
+            Plugin.gameplay.Update(___playerstatus);
+            GameplayInfo ginfo = Plugin.gameplay;
             if (GameplayInfo.mEnemyDate != null && __instance.erodown != 0 && __instance.eroflag)
             {
+                bool CanEscape = ___playerstatus.Sp > ___playerstatus.AllMaxSP() * 0.99;
                 Plugin.gameplay.Update(___playerstatus);
-                GameplayInfo ginfo = Plugin.gameplay;
-                // Fight with enemy 
-                float SpDamageMultiplier = GameplayInfo.mEnemyDate.MaxSp * 0.1f;
-                float SpDamageToEnemy = ___playerstatus.Sp * UnityEngine.Time.deltaTime * SpDamageMultiplier;
-                float SpDamageToPlayer = GameplayInfo.mEnemyDate.Sp * UnityEngine.Time.deltaTime * SpDamageMultiplier;
-                bool EnemyHaveSt = ginfo.mEnemySp > SpDamageToEnemy;
-                bool PlayerHaveSt = ___playerstatus.Sp > SpDamageToPlayer;
-                bool CanEscape = ___playerstatus.Sp > ___playerstatus.AllMaxSP() * GameplayInfo.RapeEscapeThreshold;
-                Plugin.gameplay.Update(___playerstatus);
-                // Roll 10% current stats to get more or less depend on luck
-                if (!CanEscape && ginfo.mIsPlayerAttack && ___playerstatus._BadstatusVal[0] < 99)
+                // Roll 10% current stats to get more stamina
+                if (!CanEscape && ginfo.mIsPlayerAttack)
                 {
                     // Roll dice while you down
-                    ___playerstatus._BadstatusVal[0] += 10f / ginfo.mPlayerAdvantage;
-                    ___playerstatus.Sp -= ___playerstatus.Sp * 0.1f * UnityEngine.Time.deltaTime;
-                    ___playerstatus.Mp -= ___playerstatus.Mp * 0.1f * UnityEngine.Time.deltaTime;
-                    ___playerstatus.Sp += ___playerstatus.AllMaxSP() * ginfo.mPlayerAdvantage * UnityEngine.Random.Range(0.001f, 0.5f) * UnityEngine.Time.deltaTime;
+                    if (___playerstatus._BadstatusVal[0] < 99)
+                    {
+                        ___playerstatus.BadstatusValPlus(UnityEngine.Random.Range(8f, 20f));
+                        ___playerstatus.Sp += ___playerstatus.AllMaxSP() * UnityEngine.Random.Range(-0.1f, 0.2f);
+                    }
+                    else  
+                    {
+                        if (___playerstatus.Mp > 20)
+                        {
+                            ___playerstatus.Mp -= 20;
+                            ___playerstatus.Sp += ___playerstatus.AllMaxSP() * UnityEngine.Random.Range(-0.1f, 0.2f);
+                        }
+                        else 
+                        {
+                            if (___playerstatus.Hp > 20)
+                            {
+                                ___playerstatus.Hp -= 20;
+                                ___playerstatus.Sp += ___playerstatus.AllMaxSP() * UnityEngine.Random.Range(-0.1f, 0.2f);
+                            }
+                            else if(___playerstatus.Hp < 5)
+                            {
+                                ___key_submit = true;
+                                ___key_atk = true;
+                                ___key_item = false;
+                                ___downup = 1;
+                                ___playerstatus.ParalysisOrgasm(UnityEngine.Random.Range(0f, 99f));
+                            }
+                        }
+                    }
                 }
-                if (EnemyHaveSt && PlayerHaveSt)
+                if (___playerstatus._BadstatusVal[0] < 10 && ginfo.mIsEnemyClose) 
                 {
-                    GameplayInfo.mEnemyDate.Sp -= SpDamageToEnemy;
-                    ___playerstatus.Sp -= SpDamageToPlayer;
+                    ___playerstatus.Sp -= UnityEngine.Random.Range((0.1f * ___playerstatus.AllMaxSP()), (1 * ___playerstatus.AllMaxSP()));
+                    if (___playerstatus.Sp < 0)
+                    {
+                        ___playerstatus.Sp = 0;
+                    }
                 }
-                // If escape fail loose sp and hp while enemy recover
-                if (___playerstatus._BadstatusVal[0] > 95 && ginfo.mIsEnemyClose)
+                if (___playerstatus._BadstatusVal[0] > 99)
                 {
                     // On the end enemy will restore it heath and player will get restored amount as damage
-                    float EnemyHpRecov = Math.Min((GameplayInfo.mEnemyDate.MaxHp - GameplayInfo.mEnemyDate.Hp), (___playerstatus.Hp * 0.01f));
-                    float EnemySpRecov = Math.Min((GameplayInfo.mEnemyDate.MaxSp - GameplayInfo.mEnemyDate.Sp), (___playerstatus.Sp * 0.01f));
-                    GameplayInfo.mEnemyDate.Hp += EnemyHpRecov * Time.deltaTime;
-                    GameplayInfo.mEnemyDate.Sp += EnemySpRecov * Time.deltaTime;
-                    ___playerstatus.Hp -= EnemyHpRecov * Time.deltaTime;
-                    ___playerstatus.Sp -= EnemySpRecov * Time.deltaTime;
-                    //___playerstatus._BadstatusVal[0] -= 10;
-                }
-                // Else just regenerate sp and escape when enemy will run out of sp
-                Plugin.gameplay.Update(___playerstatus);
-                //___playerstatus.Sp += ___playerstatus.AllMaxSP() * UnityEngine.Random.Range(ginfo.Buff(0.1f), ginfo.Buff(0.2f)) * ginfo.mPlayerAdvantage * UnityEngine.Time.deltaTime;
-                GameplayInfo.mEnemyDate.Sp += GameplayInfo.mEnemyDate.MaxSp * UnityEngine.Random.Range(ginfo.BuffEnemy(0.1f), ginfo.BuffEnemy(0.2f)) * ginfo.mEnemyAdvantage * UnityEngine.Time.deltaTime;
-                if (GameplayInfo.mEnemyDate.Sp >= GameplayInfo.mEnemyDate.MaxSp)
-                {
-                    GameplayInfo.mEnemyDate.Sp = GameplayInfo.mEnemyDate.MaxSp;
-                }
-                ___playerstatus.BadstatusValPlus(ginfo.BuffEnemy((float)Math.Pow(ginfo.mEnemyAdvantage,2f))  * global::UnityEngine.Time.deltaTime);
+                    float EnemyHpRecov = Math.Min((GameplayInfo.mEnemyDate.MaxHp - GameplayInfo.mEnemyDate.Hp), (___playerstatus.Hp * UnityEngine.Random.Range(0.1f, 0.5f)));
+                    GameplayInfo.mEnemyDate.Hp += EnemyHpRecov;
+                    ___playerstatus.Hp -= EnemyHpRecov;
+                    ___playerstatus.Sp -= UnityEngine.Random.Range((0.1f * ___playerstatus.AllMaxSP())  , (1 * ___playerstatus.AllMaxSP()));
+                } 
+                ___playerstatus.BadstatusValPlus(ginfo.BuffEnemy((float)Math.Pow(ginfo.mEnemyAdvantage,1.8f))  * global::UnityEngine.Time.deltaTime);
             }
         }
 
@@ -79,8 +89,7 @@ namespace NoRImmersiveEroMod
         [global::HarmonyLib.HarmonyPrefix]
         private static void DisableDownedRecoveryUnlessMaxSP(global::playercon __instance, global::PlayerStatus ___playerstatus, ref bool ___key_submit, ref bool ___key_atk, ref bool ___key_item, ref int ___downup)
         {
-            bool flag = __instance.erodown != 0 && !__instance._easyESC && ___playerstatus._SOUSA && ___playerstatus.Sp < (___playerstatus.AllMaxSP() * 0.99);
-            if (flag)
+            if (__instance.erodown != 0 && !__instance._easyESC && ___playerstatus._SOUSA && ___playerstatus.Sp < (___playerstatus.AllMaxSP() * 0.99))
             {
                 ___key_submit = false;
                 ___key_atk = false;
@@ -136,9 +145,8 @@ namespace NoRImmersiveEroMod
             // Gain plesure on knock down
             if (ginfo.Update(___playerstatus) && kickbackkind >= 3 && __instance.erodown != 0)
             {
-                // TODO: Calculate pleasure gain on strong hit when 
-                ___playerstatus.BadstatusValPlus(global::NoRImmersiveEroMod.Plugin.pleasureGainOnDown.Value);
-                ___playerstatus.Sp = ginfo.mPlayerLostStats * ginfo.mPlayerMaxSp * ginfo.mEnemyAdvantage;
+                ___playerstatus.BadstatusValPlus((float)Math.Pow(ginfo.mEnemyAdvantage, 2f));
+                ___playerstatus.Sp = 0;
             }
         }
 
@@ -173,8 +181,8 @@ namespace NoRImmersiveEroMod
                         float PleasureEnemyBuff = UnityEngine.Mathf.Lerp(2f, 1f, ginfo.mPlayerPleasure);
                         // On max pleasure this will be equal 0.5
                         float PleasurePlayerBuff = UnityEngine.Mathf.Lerp(0.5f, 1f, ginfo.mPlayerPleasure);
-                        float MinTimeToGetUp = 2f / (float)Math.Pow((ginfo.mPlayerAdvantage * PleasurePlayerBuff), ginfo.BuffPlayer(1.8f));
-                        float MaxTimeToGetUp = 2f * (float)Math.Pow((ginfo.mEnemyAdvantage * PleasureEnemyBuff), ginfo.BuffEnemy(1.8f));
+                        float MinTimeToGetUp = 2.5f / (float)Math.Pow((ginfo.mPlayerAdvantage * PleasurePlayerBuff), ginfo.BuffPlayer(1.8f));
+                        float MaxTimeToGetUp = 2.5f * (float)Math.Pow((ginfo.mEnemyAdvantage * PleasureEnemyBuff), ginfo.BuffEnemy(1.8f));
                         MinTimeToGetUp = Math.Max(3f, MinTimeToGetUp);
                         MaxTimeToGetUp = Math.Min(50f, MaxTimeToGetUp);
                         float PlayerCondition = 1 - (ginfo.mPlayerCurrentStats / ginfo.PlayerTotalStats);

@@ -1,24 +1,24 @@
 ﻿using Spine.Unity;
+using System;
 
 namespace NoRImmersiveEroMod
 {
-    // Token: 0x02000005 RID: 5
+
     internal class EnemyDatePatch
     {
-        // Token: 0x06000006 RID: 6 RVA: 0x0000213C File Offset: 0x0000033C
         [global::HarmonyLib.HarmonyPatch(typeof(global::EnemyDate), "Nakadasi")]
         [global::HarmonyLib.HarmonyPostfix]
-        private static void BirthOnCreampie(global::EnemyDate __instance, global::PlayerStatus ___playerstatus)
+        private static void OnCreampie(global::EnemyDate __instance, global::PlayerStatus ___playerstatus)
         {
-            bool flag = ___playerstatus._BadstatusVal[2] <= 0f && ___playerstatus._BadstatusVal[3] <= 0f;
-            if (flag)
-            {
-                ___playerstatus.CreampieVal_UI();
-                __instance.com_player._BirthNumber = 1;
-            }
+
+            // On the end enemy will recover hp and player will get restored amount as damage
+            float EnemyHpRecov = Math.Min((__instance.MaxHp - __instance.Hp), (___playerstatus.Hp * UnityEngine.Random.Range(0.1f, 0.9f)));
+            __instance.Hp += EnemyHpRecov;
+            ___playerstatus.Hp -= EnemyHpRecov;
+            ___playerstatus.Sp += UnityEngine.Random.Range((0.5f * ___playerstatus.AllMaxSP()), (1 * ___playerstatus.AllMaxSP()));
+
         }
 
-        // Token: 0x06000007 RID: 7 RVA: 0x0000207C File Offset: 0x0000027C
         [global::HarmonyLib.HarmonyPatch(typeof(global::EnemyDate), "WeaponDamage")]
         [global::HarmonyLib.HarmonyPatch(typeof(global::EnemyDate), "StabDamage")]
         [global::HarmonyLib.HarmonyPrefix]
@@ -26,7 +26,7 @@ namespace NoRImmersiveEroMod
         {
             if (___playerstatus.correction[2] > 0f)
             {
-                ___playerstatus.Mp += 3f * ___playerstatus.correction[2];
+                ___playerstatus.Mp += 3f * ___playerstatus.correction[2] * (float)Math.Pow(Plugin.gameplay.mPlayerAdvantage, 2);
             }
         }
 
@@ -77,17 +77,16 @@ namespace NoRImmersiveEroMod
         [global::HarmonyLib.HarmonyPostfix]
         private static void SpawnSuperEnemy(global::EnemyDate __instance, global::Spine.Unity.SkeletonAnimation ___mySpine, ref string ___JPname)
         {
-            bool flag = global::UnityEngine.Random.value < global::NoRImmersiveEroMod.Plugin.eliteSpawnChance.Value;
-            if (flag)
+            //if (UnityEngine.Random.value < Plugin.eliteSpawnChance.Value)
+            if(UnityEngine.Random.Range(0f,2f) > 1f)
             {
                 ___JPname += "<SUPER>";
-                __instance.MaxHp *= global::NoRImmersiveEroMod.Plugin.eliteHPMulti.Value;
+                __instance.MaxHp *= UnityEngine.Random.Range(2f, 4f);
                 __instance.Hp = __instance.MaxHp;
                 __instance.Exp = global::UnityEngine.Mathf.RoundToInt((float)__instance.Exp * global::NoRImmersiveEroMod.Plugin.eliteEXPMulti.Value);
                 __instance.enmMovespeed *= global::NoRImmersiveEroMod.Plugin.eliteSpeedMulti.Value;
                 global::UnityEngine.Color color;
-                bool flag2 = global::UnityEngine.ColorUtility.TryParseHtmlString(global::NoRImmersiveEroMod.Plugin.eliteColor.Value, out color);
-                if (flag2)
+                if (UnityEngine.ColorUtility.TryParseHtmlString(global::NoRImmersiveEroMod.Plugin.eliteColor.Value, out color))
                 {
                     ___mySpine.skeleton.SetColor(color);
                 }
@@ -141,8 +140,7 @@ namespace NoRImmersiveEroMod
         [global::HarmonyLib.HarmonyPrefix]
         private static bool SuperEnemyColor(global::EnemyDate __instance, global::Spine.Unity.SkeletonAnimation ___mySpine, string ___JPname)
         {
-            bool flag = ___JPname.Contains("<SUPER>");
-            if (flag)
+            if (___JPname.Contains("<SUPER>"))
             {
                 global::UnityEngine.Color color;
                 bool flag2 = global::UnityEngine.ColorUtility.TryParseHtmlString(global::NoRImmersiveEroMod.Plugin.eliteColor.Value, out color);
@@ -202,10 +200,10 @@ namespace NoRImmersiveEroMod
         [global::HarmonyLib.HarmonyPostfix]
         private static void SuperEnemySpeed(string ___JPname, ref float ___imagetime)
         {
-            bool flag = ___JPname.Contains("<SUPER>");
-            if (flag)
+            if (___JPname.Contains("<SUPER>"))
             {
-                ___imagetime *= global::NoRImmersiveEroMod.Plugin.eliteSpeedMulti.Value;
+                float EnemySpeedMultiRandom = UnityEngine.Random.Range(0.5f, Plugin.eliteSpeedMulti.Value);
+                ___imagetime *= EnemySpeedMultiRandom;
             }
         }
 
@@ -258,22 +256,8 @@ namespace NoRImmersiveEroMod
             global::PlayerStatus ___playerstatus, string ___JPname, ref bool ___ParryBlank,
             float ___piyoriY, global::UnityEngine.GameObject ___piyo)
         {
+            
             GameplayInfo ginfo = Plugin.gameplay;
-            ginfo.Update(___playerstatus, __instance);
-            // Calculete condition where eney can knock down player
-            bool cnd_01 = ginfo.mIsRevengeDamageBar && ginfo.mIsPlayerWeak && !ginfo.mIsEnemyWeak && ginfo.mIsDamageStatus;
-            bool cnd_02 = ginfo.mIsRevengeDamageBar && ginfo.mIsEnemyStronger && ginfo.mIsDamageStatus;
-            if (cnd_01 || cnd_02)
-            {
-                bool Condition = !__instance.com_player.eroflag && !__instance.eroflag && collision.gameObject.tag == "playerDAMAGEcol"
-                    && !__instance.com_player.stepfrag && __instance.com_player.m_Grounded;
-                if (Condition)
-                {
-                    __instance.com_player.ImmediatelyERO();
-                    // Get sp damage based on player condition
-                    ___playerstatus.Sp = ginfo.mPlayerLostStats * ginfo.mPlayerMaxSp *  ginfo.mEnemyAdvantage;
-                }
-            }
             // Calculate whether palyer can execute enemy
             // No need to do fatality, health is already too low or enemy dead
             ginfo.Update(___playerstatus, __instance);
@@ -298,6 +282,34 @@ namespace NoRImmersiveEroMod
                     __instance.damedir = 1;
                 }
                 ___ParryBlank = true;
+            }
+            ginfo.Update(___playerstatus, __instance);
+            // Calculete condition where eney can knock down player
+            bool cnd_01 = ginfo.mIsRevengeDamageBar && ginfo.mIsPlayerWeak && !ginfo.mIsEnemyWeak && ginfo.mIsDamageStatus && ginfo.mIsEnemyClose;
+            bool cnd_02 = ginfo.mIsRevengeDamageBar && ginfo.mIsEnemyStronger && ginfo.mIsDamageStatus && ginfo.mIsEnemyClose;
+            if (cnd_01 || cnd_02)
+            {
+                bool Condition = !__instance.com_player.eroflag && !__instance.eroflag && collision.gameObject.tag == "playerDAMAGEcol"
+                    && !__instance.com_player.stepfrag && __instance.com_player.m_Grounded;
+                if (Condition)
+                {
+                    __instance.com_player.ImmediatelyERO();
+                    // Get sp damage based on player condition
+                    ___playerstatus.Sp = 0;
+                }
+            }
+            // Enrmy hp regeneration
+            bool ViewRange = __instance.distance < 15f && __instance.distance > -15f;
+            if (ViewRange && !IsEnemyAlmostDead)
+            {
+                if (__instance.Hp <= __instance.MaxHp)
+                {
+                    __instance.Hp += (__instance.MaxHp * 0.01f) * UnityEngine.Time.deltaTime;
+                }
+                if (__instance.Hp >= __instance.MaxHp)
+                {
+                    __instance.Hp = __instance.MaxHp;
+                }
             }
         }
 

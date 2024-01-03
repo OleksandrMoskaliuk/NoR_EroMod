@@ -13,13 +13,12 @@
 
         [global::HarmonyLib.HarmonyPatch(typeof(global::Buff), "ParalysisOrgasm")]
         [global::HarmonyLib.HarmonyPrefix]
-        private static bool NoPleasureRecoveryOnOrgasm(global::Buff __instance, bool ___orgasm)
+        private static void NoPleasureRecoveryOnOrgasm(global::Buff __instance, bool ___orgasm)
         {
             //if (___orgasm)
             //{
             //	__instance.Invoke("ParalysisOrgasmInvoke", 2f);
             //}
-            return true;
         }
 
         public BuffPatch()
