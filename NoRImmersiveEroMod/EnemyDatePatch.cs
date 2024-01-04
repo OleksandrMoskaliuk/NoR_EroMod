@@ -11,12 +11,13 @@ namespace NoRImmersiveEroMod
         private static void OnCreampie(global::EnemyDate __instance, global::PlayerStatus ___playerstatus)
         {
 
-            // On the end enemy will recover hp and player will get restored amount as damage
-            float EnemyHpRecov = Math.Min((__instance.MaxHp - __instance.Hp), (___playerstatus.Hp * UnityEngine.Random.Range(0.1f, 0.9f)));
+            // On the end enemy will restore it heath and player will get restored amount as damage
+            float MinD = Plugin.EnemyMinCurrentPlayerHealthDrainOnCum.Value;
+            float MaxD = Plugin.EnemyMaxCurrentPlayerHealthDrainOnCum.Value;
+            float EnemyHpRecov = Math.Min((__instance.MaxHp - __instance.Hp), (___playerstatus.Hp * UnityEngine.Random.Range(MinD, MaxD)));
             __instance.Hp += EnemyHpRecov;
             ___playerstatus.Hp -= EnemyHpRecov;
-            ___playerstatus.Sp += UnityEngine.Random.Range((0.5f * ___playerstatus.AllMaxSP()), (1 * ___playerstatus.AllMaxSP())) * Plugin.RapeEscapeDifficulty.Value;
-
+            ___playerstatus.Sp += UnityEngine.Random.Range((0.5f * ___playerstatus.AllMaxSP()), (1f * ___playerstatus.AllMaxSP()));
         }
 
         [global::HarmonyLib.HarmonyPatch(typeof(global::EnemyDate), "WeaponDamage")]
@@ -26,7 +27,14 @@ namespace NoRImmersiveEroMod
         {
             if (___playerstatus.correction[2] > 0f)
             {
-                ___playerstatus.Mp += 3f * ___playerstatus.correction[2] * (float)Math.Pow(Plugin.gameplay.mPlayerAdvantage, 2);
+                if (___playerstatus.Mp < ___playerstatus.AllMaxMP())
+                {
+                    ___playerstatus.Mp += (___playerstatus.AllMaxMP() - ___playerstatus.Mp) * 0.1f;
+                }
+                if (___playerstatus.Mp > ___playerstatus.AllMaxMP()) 
+                {
+                    ___playerstatus.Mp = ___playerstatus.AllMaxMP();
+                }
             }
         }
 
@@ -81,9 +89,10 @@ namespace NoRImmersiveEroMod
             if(Plugin.eliteSpawnChance.Value > UnityEngine.Random.Range(0f, 0.99f))
             {
                 ___JPname += "<SUPER>";
-                __instance.MaxHp *= UnityEngine.Random.Range(2f, 4f);
+                float HpMulti = UnityEngine.Random.Range(Plugin.eliteMinHPMulti.Value, Plugin.eliteMaxHPMulti.Value);
+                __instance.MaxHp *= HpMulti;
                 __instance.Hp = __instance.MaxHp;
-                __instance.Exp = global::UnityEngine.Mathf.RoundToInt((float)__instance.Exp * global::NoRImmersiveEroMod.Plugin.eliteEXPMulti.Value);
+                __instance.Exp = global::UnityEngine.Mathf.RoundToInt(__instance.Exp * HpMulti * (1 + Plugin.eliteSpeedMulti.Value) * global::NoRImmersiveEroMod.Plugin.eliteEXPMulti.Value);
                 __instance.enmMovespeed *= UnityEngine.Random.Range(0.5f, global::NoRImmersiveEroMod.Plugin.eliteSpeedMulti.Value);
                 global::UnityEngine.Color color;
                 if (UnityEngine.ColorUtility.TryParseHtmlString(global::NoRImmersiveEroMod.Plugin.eliteColor.Value, out color))
@@ -298,13 +307,13 @@ namespace NoRImmersiveEroMod
                     ___playerstatus.Sp = 0;
                 }
             }
-            // Enrmy hp regeneration
+            // Elite enemies hp regeneration
             bool ViewRange = __instance.distance < 15f && __instance.distance > -15f;
-            if (ViewRange && !IsEnemyAlmostDead)
+            if (ViewRange && !IsEnemyAlmostDead && ginfo.mIsRevengeDamageBar && Plugin.CanEliteReganerate.Value && ___JPname.Contains("<SUPER>"))
             {
                 if (__instance.Hp <= __instance.MaxHp)
                 {
-                    __instance.Hp += (__instance.MaxHp * 0.01f) * UnityEngine.Time.deltaTime;
+                    __instance.Hp += (__instance.MaxHp * 0.01f * Plugin.EnemyRegenerationMultiplier.Value) * UnityEngine.Time.deltaTime;
                 }
                 if (__instance.Hp >= __instance.MaxHp)
                 {

@@ -102,7 +102,7 @@ namespace NoRImmersiveEroMod
             bool CanEscape = mPlayerStatus.Sp > mPlayerStatus.AllMaxSP() * 0.99;
 
             Plugin.LoggerMessage01 = "Player state " + mPlayercon.state;
-            Plugin.LoggerMessage02 = "EnemyHaveSt = " + EnemyHaveSt;
+            //Plugin.LoggerMessage02 = "EnemyHaveSt = " + EnemyHaveSt;
             //Plugin.LoggerMessage03 = "mEnemyTotalStats = " + mEnemyTotalStats;
             //Plugin.LoggerMessage04 = "mPlayerTotalStats = " + mPlayerTotalStats;
 

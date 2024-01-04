@@ -8,21 +8,28 @@ namespace NoRImmersiveEroMod
     {
         private void Awake()
         {
-            global::NoRImmersiveEroMod.Plugin.Log = base.Logger;
-            global::NoRImmersiveEroMod.Plugin.eliteSpawnChance = base.Config.Bind<float>("Enemies", "SpawnChance", 1f, "Chance for an enemy to spawn as an elite (0-1)");
-            global::NoRImmersiveEroMod.Plugin.eliteHPMulti = base.Config.Bind<float>("Enemies", "HPMultiplier", 3f, "Enemies have random Hp multiplier from 1 to HPMultiplier value");
-            global::NoRImmersiveEroMod.Plugin.eliteEXPMulti = base.Config.Bind<float>("Enemies", "EXPMultiplier", 4f, "Elites have their EXP multiplied by this value");
-            global::NoRImmersiveEroMod.Plugin.eliteSpeedMulti = base.Config.Bind<float>("Enemies", "SpeedMultiplier", 1.5f, "Elite enemies ATK multiplier random range (0.5 - SpeedMultiplier)");
-            global::NoRImmersiveEroMod.Plugin.eliteColor = base.Config.Bind<string>("Enemies", "Color", "#ffffff", "Elites cab be tinted this color (#550055), by default color is transparent");
-            global::NoRImmersiveEroMod.Plugin.pleasureEnemyAttackMax = base.Config.Bind<float>("PleasureStatus", "EnemyAttackMultiplierMax", 2.0f, "Player takes this much more damage when at max pleasure");
-            global::NoRImmersiveEroMod.Plugin.pleasureEnemyAttackMin = base.Config.Bind<float>("PleasureStatus", "EnemyAttackMultiplierMin", 1f, "Player takes this much more damage when at zero pleasure");
-            global::NoRImmersiveEroMod.Plugin.pleasurePlayerAttackMax = base.Config.Bind<float>("PleasureStatus", "PlayerAttackMultiplierMax", 0.3f, "Player deals this much more damage when at max pleasure");
-            global::NoRImmersiveEroMod.Plugin.pleasurePlayerAttackMin = base.Config.Bind<float>("PleasureStatus", "PlayerAttackMultiplierMin", 1f, "Player deals this much more damage when at zero pleasure");
-            global::NoRImmersiveEroMod.Plugin.pleasureAttackSpeedMax = base.Config.Bind<float>("PleasureStatus", "PlayerAttackSpeedMultiplierMax", 0.7f, "Player attacks this much faster when at max pleasure");
-            global::NoRImmersiveEroMod.Plugin.pleasureAttackSpeedMin = base.Config.Bind<float>("PleasureStatus", "PlayerAttackSpeedMultiplierMin", 1.3f, "Player attacks this much faster when at zero pleasure");
-            global::NoRImmersiveEroMod.Plugin.pleasureOnRapeGainMultiplier = base.Config.Bind<float>("PleasureStatus", "pleasureOnRapeGainMultiplier", 1f, "Pleasure multiplier when rape starts, range (0.1 - 2)");
-            global::NoRImmersiveEroMod.Plugin.SPRegenOnDownState = base.Config.Bind<float>("PleasureStatus", "SPRegenOnDownState", 1f, "Stamina regeneration multiplier, when player knock down range (0.1 - 10)");
-            global::NoRImmersiveEroMod.Plugin.RapeEscapeDifficulty = base.Config.Bind<float>("Rape", "RapeEscapeDifficulty", 1f, "Rape Escape multiplier, by default 1 in default range (0.1 - 2)");
+            Log = base.Logger;
+            // Enemies
+            eliteSpawnChance = base.Config.Bind<float>("Enemies", "SpawnChance", 0.3f, "Chance for an enemy to spawn as an elite (0-1)");
+            eliteMinHPMulti = base.Config.Bind<float>("Enemies", "HPMultiplier", 0.5f, "Enemies have random Hp multiplier from MinHPMultiplier to MaxHPMultiplier value acceptable range (0.1- 1)");
+            eliteMaxHPMulti = base.Config.Bind<float>("Enemies", "HPMultiplier", 4f, "Enemies have random Hp multiplier from MinHPMultiplier to MaxHPMultiplier value acceptable range (1-10)");
+            eliteEXPMulti = base.Config.Bind<float>("Enemies", "EXPMultiplier", 4f, "Elites have their EXP multiplied by this value");
+            eliteSpeedMulti = base.Config.Bind<float>("Enemies", "SpeedMultiplier", 1.5f, "Elite enemies ATK multiplier random range (0.5 - SpeedMultiplier)");
+            eliteColor = base.Config.Bind<string>("Enemies", "Color", "#ffffff", "Elites cab be tinted this color (#550055), by default color is transparent");
+            CanEliteReganerate = base.Config.Bind<bool>("Enemies", "CanEnemyReganerate", true, "Enemy will regenerate some hp after hit player");
+            EnemyRegenerationMultiplier = base.Config.Bind<float>("Enemies", "EnemyRegenerationMultiplier", 0.01f, "Enemy will regenerate some hp * EnemyRegenerationMultiplier acceptable range(0.01 to 2)");
+            // Pleasure
+            pleasureEnemyAttackMin = base.Config.Bind<float>("PleasureStatus", "EnemyAttackMultiplierMin", 1f, "Player takes this much more damage when at zero pleasure");
+            pleasureEnemyAttackMax = base.Config.Bind<float>("PleasureStatus", "EnemyAttackMultiplierMax", 2.0f, "Player takes this much more damage when at max pleasure");
+            pleasurePlayerAttackMax = base.Config.Bind<float>("PleasureStatus", "PlayerAttackMultiplierMax", 0.3f, "Player deals this much more damage when at max pleasure");
+            pleasurePlayerAttackMin = base.Config.Bind<float>("PleasureStatus", "PlayerAttackMultiplierMin", 1f, "Player deals this much more damage when at zero pleasure");
+            pleasureAttackSpeedMax = base.Config.Bind<float>("PleasureStatus", "PlayerAttackSpeedMultiplierMax", 0.7f, "Player attacks this much faster when at max pleasure");
+            pleasureAttackSpeedMin = base.Config.Bind<float>("PleasureStatus", "PlayerAttackSpeedMultiplierMin", 1.3f, "Player attacks this much faster when at zero pleasure");
+            // Rape
+            pleasureOnRapeGainMultiplier = base.Config.Bind<float>("PleasureStatus", "pleasureOnRapeGainMultiplier", 1f, "Pleasure multiplier when rape starts, range (0.1 - 2)");
+            SPRegenOnDownState = base.Config.Bind<float>("PleasureStatus", "SPRegenOnDownState", 1f, "Stamina regeneration multiplier, when player knock down range (0.1 - 10)");
+            EnemyMinCurrentPlayerHealthDrainOnCum = base.Config.Bind<float>("Rape", "EnemyMinCurrentPlayerHealthDrainOnCum", 0.1f, "Enemi will drain random amount of player current hp based on EnemyMinCurrentPlayerHealthDrainOnCum range (0.1 - 1) 0.1 = 10% of player current hp, works only if enemy wounded");
+            EnemyMaxCurrentPlayerHealthDrainOnCum = base.Config.Bind<float>("Rape", "EnemyMaxCurrentPlayerHealthDrainOnCum", 0.5f, "Enemi will drain random amount of player current hp based on EnemyMaxCurrentPlayerHealthDrainOnCum range (0.1 - 1) 1.0 = 100% of player current hp, works only if enemy wounded");
             global::HarmonyLib.Harmony.CreateAndPatchAll(typeof(global::NoRImmersiveEroMod.PlayerConPatch), null);
             global::HarmonyLib.Harmony.CreateAndPatchAll(typeof(global::NoRImmersiveEroMod.PlayerStatusPatch), null);
             global::HarmonyLib.Harmony.CreateAndPatchAll(typeof(global::NoRImmersiveEroMod.EnemyDatePatch), null);
@@ -153,22 +160,30 @@ namespace NoRImmersiveEroMod
 
             gameplay = new GameplayInfo();
         }
-
+        // Enemies configs
         public static global::BepInEx.Configuration.ConfigEntry<float> eliteSpawnChance;
-        public static global::BepInEx.Configuration.ConfigEntry<float> eliteHPMulti;
+        public static global::BepInEx.Configuration.ConfigEntry<float> eliteMinHPMulti;
+        public static global::BepInEx.Configuration.ConfigEntry<float> eliteMaxHPMulti;
         public static global::BepInEx.Configuration.ConfigEntry<float> eliteEXPMulti;
         public static global::BepInEx.Configuration.ConfigEntry<float> eliteSpeedMulti;
         public static global::BepInEx.Configuration.ConfigEntry<string> eliteColor;
+        public static BepInEx.Configuration.ConfigEntry<bool> CanEliteReganerate;
+        public static global::BepInEx.Configuration.ConfigEntry<float> EnemyRegenerationMultiplier;
+        // Rape
+        public static global::BepInEx.Configuration.ConfigEntry<float> EnemyMinCurrentPlayerHealthDrainOnCum;
+        public static global::BepInEx.Configuration.ConfigEntry<float> EnemyMaxCurrentPlayerHealthDrainOnCum;
+        public static global::BepInEx.Configuration.ConfigEntry<float> pleasureOnRapeGainMultiplier;
+        public static global::BepInEx.Configuration.ConfigEntry<float> SPRegenOnDownState;
+        // Pleasure configs
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasureEnemyAttackMax;
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasureEnemyAttackMin;
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasurePlayerAttackMax;
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasurePlayerAttackMin;
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasureAttackSpeedMax;
         public static global::BepInEx.Configuration.ConfigEntry<float> pleasureAttackSpeedMin;
-        public static global::BepInEx.Configuration.ConfigEntry<float> pleasureOnRapeGainMultiplier;
-        public static global::BepInEx.Configuration.ConfigEntry<float> SPRegenOnDownState;
-        public static global::BepInEx.Configuration.ConfigEntry<float> RapeEscapeDifficulty;
         internal static global::BepInEx.Logging.ManualLogSource Log;
+
+        // Basic stats and states calculation
         public static GameplayInfo gameplay;
 
         // Logger 01
